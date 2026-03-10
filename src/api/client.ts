@@ -7,11 +7,14 @@ const PORT = process.env.EXPO_PUBLIC_API_PORT;
 if (!MY_COMPUTER_IP || !PORT) {
   console.warn('⚠️ API yapılandırması .env dosyasında bulunamadı!');
 }
+
 export const apiClient = axios.create({
   baseURL: `http://${MY_COMPUTER_IP}:${PORT}`,
+  // baseURL: `http://10.0.2.2:${PORT}`,
   timeout: 10000, // 10 saniye bekle, hemen pes etme
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    withCredentials: true,
   },
 });
