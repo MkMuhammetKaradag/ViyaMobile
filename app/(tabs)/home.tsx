@@ -25,7 +25,16 @@ export default function HomeScreen() {
       router.replace('/(auth)');
     }
   };
-
+  const handleRequest = async () => {
+    try {
+      const res = await apiClient.get(
+        '/api/v1/trips/af027e65-a891-4410-8661-2f11f0bc5cc2',
+      );
+      console.log(res.data);
+    } catch (error) {
+      console.error('get trip error:', error);
+    }
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ana Sayfa</Text>
@@ -33,6 +42,9 @@ export default function HomeScreen() {
 
       <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
         <Text style={styles.signOutText}>Çıkış Yap</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.requestButton} onPress={handleRequest}>
+        <Text style={styles.requestText}>Test İstek</Text>
       </TouchableOpacity>
     </View>
   );
@@ -66,7 +78,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
   },
+
+  requestButton: {
+    backgroundColor: '#13acc7',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    marginTop: 12,
+    borderRadius: 8,
+    elevation: 12, // Android gölge
+    shadowColor: '#970202', // iOS gölge
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+  },
   signOutText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  requestText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',

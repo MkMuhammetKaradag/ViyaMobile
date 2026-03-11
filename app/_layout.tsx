@@ -32,7 +32,7 @@ export default function RootLayout() {
 
     if (!hasSession && !inAuthGroup) {
       // Giriş yoksa logine at
-      router.replace('/(auth)/LoginScreen');
+      router.replace('/(auth)');
     } else if (hasSession && inAuthGroup) {
       // Giriş varsa içerideki ana sayfaya at
       router.replace('/home');
@@ -48,10 +48,17 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        animation: 'fade',
+        contentStyle: { backgroundColor: '#FFFFFF' },
+      }}
+    >
+      <Stack.Screen name="(auth)/index" options={{ headerShown: false }} />
+      <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
       <Stack.Screen
-        name="home"
+        name="(tabs)/home"
         options={{ headerShown: true, title: 'Ana Sayfa' }}
       />
     </Stack>

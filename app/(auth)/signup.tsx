@@ -1,8 +1,7 @@
-import MapBG from '@/assets/images/map_bg.png';
+import MapBG from '@/assets/images/map_bg.png'; // Giriş sayfasındaki aynı görsel
 import { apiClient } from '@/src/api/client';
-import { Ionicons } from '@expo/vector-icons'; // Göz ikonu ve sosyal medya için
+import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,29 +18,35 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function SignInScreen() {
+export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignIn = async () => {
-    if (!email || !password)
+  const handleSignUp = async () => {
+    if (!email || !password || !username) {
       return Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
+    }
     setLoading(true);
     try {
-      const response = await apiClient.post('/api/v1/auth/signin', {
-        identifier: email,
+      const response = await apiClient.post('/api/v1/auth/signup', {
+        username: username,
+        email: email,
         password: password,
       });
 
-      if (response.status === 200) {
-        await SecureStore.setItemAsync('hasSession', 'true');
-        router.replace('/(tabs)/home');
+      if (response.status === 201 || response.status === 200) {
+        Alert.alert(
+          'Başarılı',
+          'Hesap oluşturuldu! Şimdi giriş yapabilirsiniz.',
+        );
+        router.replace('/(auth)');
       }
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Giriş yapılamadı';
+      const msg = error.response?.data?.message || 'Kayıt başarısız';
       Alert.alert('Hata', msg);
     } finally {
       setLoading(false);
@@ -50,17 +55,15 @@ export default function SignInScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Arka Plan Haritası - Asset klasörüne bir harita görseli eklemelisin */}
-
       <ImageBackground
         source={MapBG}
-        style={StyleSheet.absoluteFillObject} // Tüm ekranı kaplaması için
+        style={StyleSheet.absoluteFillObject}
         imageStyle={{
-          opacity: 0.4, // Görseldeki gibi çok hafif olması için 0.1 civarı idealdir
-          resizeMode: 'cover', // Tüm alanı kapla
+          opacity: 0.4,
+          resizeMode: 'cover',
           position: 'absolute',
-          top: 0, // En tepeden başla
-          height: '30%', // Ekranın sadece üst kısmını kaplaması için (Görseldeki gibi)
+          top: 0,
+          height: '30%',
         }}
       >
         <SafeAreaView style={{ flex: 1 }}>
@@ -72,25 +75,31 @@ export default function SignInScreen() {
               contentContainerStyle={styles.scrollContainer}
               showsVerticalScrollIndicator={false}
             >
-              {/* Logo Bölümü */}
               <View style={styles.headerContainer}>
-                <Text style={styles.brandText}>VİYA</Text>
-                <View style={styles.brandUnderline} />
-                <Text style={styles.welcomeText}>HOŞ GELDİN!</Text>
+                <View style={styles.brandWrapper}>
+                  <View style={styles.dot} />
+                  <Text style={styles.brandText}>VİYA</Text>
+                </View>
+                <Text style={styles.welcomeText}>HESAP OLUŞTUR</Text>
+                <Text style={styles.subtitleText}>
+                  Yeni bir maceraya başlamak için kayıt ol
+                </Text>
               </View>
 
-              {/* Form Bölümü */}
               <View style={styles.formContainer}>
-                {/* Sosyal Medya Butonu */}
-                <TouchableOpacity style={styles.socialButton}>
-                  <Ionicons name="logo-google" size={20} color="#4A90E2" />
-                  <Text style={styles.socialButtonText}>
-                    {' '}
-                    VEYA SOSYAL MEDYA İLE DEVAM ET
-                  </Text>
-                </TouchableOpacity>
+                {/* Kullanıcı Adı */}
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Kullanıcı Adı"
+                    placeholderTextColor="#A0A0A0"
+                    value={username}
+                    onChangeText={setUsername}
+                    autoCapitalize="none"
+                  />
+                </View>
 
-                {/* Email Girişi */}
+                {/* Email */}
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.input}
@@ -99,14 +108,15 @@ export default function SignInScreen() {
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
+                    keyboardType="email-address"
                   />
                 </View>
 
-                {/* Şifre Girişi */}
+                {/* Şifre */}
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={[styles.input, { flex: 1 }]}
-                    placeholder="Şifrem?"
+                    placeholder="Şifre"
                     placeholderTextColor="#A0A0A0"
                     value={password}
                     onChangeText={setPassword}
@@ -123,25 +133,23 @@ export default function SignInScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Giriş Butonu */}
                 <TouchableOpacity
                   style={[styles.loginButton, loading && { opacity: 0.7 }]}
-                  onPress={handleSignIn}
+                  onPress={handleSignUp}
                   disabled={loading}
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.loginButtonText}>GİRİŞ YAP</Text>
+                    <Text style={styles.loginButtonText}>KAYIT OL</Text>
                   )}
                 </TouchableOpacity>
 
-                {/* Kayıt Ol Linki */}
-                <Link href="/(auth)/signup" asChild>
+                <Link href="/(auth)" asChild>
                   <TouchableOpacity style={styles.footerLink}>
                     <Text style={styles.footerText}>
-                      Hesabın yok mu?{' '}
-                      <Text style={styles.footerLinkText}>KAYIT OL</Text>
+                      Zaten hesabınız var mı?{' '}
+                      <Text style={styles.footerLinkText}>GİRİŞ YAP</Text>
                     </Text>
                   </TouchableOpacity>
                 </Link>
@@ -156,16 +164,19 @@ export default function SignInScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  bgImage: { flex: 1, width: '100%' },
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: 30,
     justifyContent: 'center',
   },
-
-  headerContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
+  headerContainer: { alignItems: 'center', marginBottom: 40 },
+  brandWrapper: { alignItems: 'center' },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF4D4D',
+    marginBottom: -10,
   },
   brandText: {
     fontSize: 48,
@@ -173,35 +184,20 @@ const styles = StyleSheet.create({
     color: '#333',
     letterSpacing: 5,
   },
-  brandUnderline: {
-    width: 20,
-    height: 3,
-    backgroundColor: '#FF4D4D', // Logodaki küçük kırmızı detay
-    marginTop: -5,
-  },
   welcomeText: {
     fontSize: 22,
     fontWeight: '600',
     color: '#444',
-    marginTop: 40,
+    marginTop: 30,
     letterSpacing: 1,
   },
-
-  formContainer: {
-    width: '100%',
+  subtitleText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+    textAlign: 'center',
   },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 25,
-  },
-  socialButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#333',
-  },
-
+  formContainer: { width: '100%' },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -210,7 +206,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     height: 55,
     marginBottom: 15,
-    // Soft Shadow (Görseldeki gibi hafif gölge)
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -219,18 +214,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F0F0F0',
   },
-  input: {
-    fontSize: 15,
-    color: '#333',
-  },
-
+  input: { fontSize: 15, color: '#333' },
   loginButton: {
-    backgroundColor: '#4ECDC4', // Görseldeki turkuaz tonu
+    backgroundColor: '#4ECDC4',
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
     elevation: 4,
     shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 4 },
@@ -243,17 +234,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 1,
   },
-
-  footerLink: {
-    marginTop: 25,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  footerLinkText: {
-    color: '#FF6B6B', // Kayıt ol vurgu rengi
-    fontWeight: 'bold',
-  },
+  footerLink: { marginTop: 25, alignItems: 'center' },
+  footerText: { color: '#666', fontSize: 14 },
+  footerLinkText: { color: '#FF6B6B', fontWeight: 'bold' },
 });
