@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 // ipconfig'de gördüğün IPv4 adresini buraya tırnak içinde yapıştır
 const MY_COMPUTER_IP = process.env.EXPO_PUBLIC_API_IP;
 const PORT = process.env.EXPO_PUBLIC_API_PORT;
@@ -17,6 +17,9 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+
+    'X-Platform': Platform.OS, // 'ios' veya 'android' döner
+
     withCredentials: true,
   },
 });

@@ -3,7 +3,8 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+// LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [hasSession, setHasSession] = useState<string | null>(null);
@@ -49,19 +50,21 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: 'fade',
-        contentStyle: { backgroundColor: '#FFFFFF' },
-      }}
-    >
-      <Stack.Screen name="(auth)/index" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="(tabs)/home"
-        options={{ headerShown: true, title: 'Ana Sayfa' }}
-      />
-    </Stack>
+    <SafeAreaProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade',
+          contentStyle: { backgroundColor: '#FFFFFF' },
+        }}
+      >
+        <Stack.Screen name="(auth)/index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(tabs)/home"
+          options={{ headerShown: true, title: 'Ana Sayfa' }}
+        />
+      </Stack>
+    </SafeAreaProvider>
   );
 }
