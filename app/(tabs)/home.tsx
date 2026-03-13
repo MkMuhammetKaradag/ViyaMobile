@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { apiClient } from '../../src/api/client'; // Kendi dosya yoluna göre ayarla
 
 export default function HomeScreen() {
@@ -36,69 +36,40 @@ export default function HomeScreen() {
     }
   };
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Ana Sayfa</Text>
-      <Text style={styles.welcomeText}>Viya Uygulamasına Hoş Geldiniz!</Text>
+    <View className="flex-1 justify-center items-center bg-gray-50 px-6">
+      {/* Başlık Bölümü */}
+      <View className="items-center mb-12">
+        <Text className="text-3xl font-black text-gray-800 tracking-tight">
+          Ana Sayfa
+        </Text>
+        <View className="w-12 h-1 bg-[#4ECDC4] mt-1 rounded-full" />
+        <Text className="text-base text-gray-500 mt-4 text-center">
+          Viya Uygulamasına Hoş Geldiniz!
+        </Text>
+      </View>
 
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutText}>Çıkış Yap</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.requestButton} onPress={handleRequest}>
-        <Text style={styles.requestText}>Test İstek</Text>
-      </TouchableOpacity>
+      {/* Aksiyon Butonları */}
+      <View className="w-full space-y-4">
+        {/* Test İstek Butonu (Viya Turkuazı) */}
+        <TouchableOpacity
+          className="bg-[#4ECDC4] h-14 rounded-2xl flex-row items-center justify-center shadow-lg shadow-teal-500/30"
+          onPress={handleRequest}
+        >
+          <Text className="text-white text-base font-bold tracking-widest uppercase">
+            Test İstek At
+          </Text>
+        </TouchableOpacity>
+
+        {/* Çıkış Yap Butonu (Viya Kırmızısı) */}
+        <TouchableOpacity
+          className="bg-[#FF6B6B] h-14 rounded-2xl flex-row items-center justify-center shadow-lg shadow-red-500/30 mt-4"
+          onPress={handleSignOut}
+        >
+          <Text className="text-white text-base font-bold tracking-widest uppercase">
+            Çıkış Yap
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  welcomeText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
-  },
-  signOutButton: {
-    backgroundColor: '#ff4444',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    elevation: 3, // Android gölge
-    shadowColor: '#000', // iOS gölge
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-  },
-
-  requestButton: {
-    backgroundColor: '#13acc7',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    marginTop: 12,
-    borderRadius: 8,
-    elevation: 12, // Android gölge
-    shadowColor: '#970202', // iOS gölge
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-  },
-  signOutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  requestText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

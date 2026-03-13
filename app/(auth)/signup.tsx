@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -54,43 +53,45 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <ImageBackground
         source={MapBG}
-        style={StyleSheet.absoluteFillObject}
-        imageStyle={{
-          opacity: 0.4,
-          resizeMode: 'cover',
-          position: 'absolute',
-          top: 0,
-          height: '30%',
-        }}
+        resizeMode="cover"
+        imageStyle={{ height: '30%' }}
+        imageClassName="opacity-40 absolute top-0"
+        className="flex-1"
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView className="flex-1">
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
+            className="flex-1"
           >
             <ScrollView
-              contentContainerStyle={styles.scrollContainer}
+              contentContainerClassName="flex-grow px-8 justify-center"
               showsVerticalScrollIndicator={false}
             >
-              <View style={styles.headerContainer}>
-                <View style={styles.brandWrapper}>
-                  <View style={styles.dot} />
-                  <Text style={styles.brandText}>VİYA</Text>
+              {/* Header Bölümü */}
+              <View className="items-center mb-10">
+                <View className="items-center">
+                  <View className="w-2 h-2 rounded-full bg-[#FF4D4D] -mb-2 z-10" />
+                  <Text className="text-[48px] font-[900] text-gray-800 tracking-[5px]">
+                    VİYA
+                  </Text>
                 </View>
-                <Text style={styles.welcomeText}>HESAP OLUŞTUR</Text>
-                <Text style={styles.subtitleText}>
+                <Text className="text-[22px] font-semibold text-gray-700 mt-8 tracking-widest">
+                  HESAP OLUŞTUR
+                </Text>
+                <Text className="text-sm text-gray-500 mt-1 text-center">
                   Yeni bir maceraya başlamak için kayıt ol
                 </Text>
               </View>
 
-              <View style={styles.formContainer}>
+              {/* Form Bölümü */}
+              <View className="w-full">
                 {/* Kullanıcı Adı */}
-                <View style={styles.inputWrapper}>
+                <View className="flex-row items-center bg-white rounded-[25px] px-5 h-14 mb-4 shadow-sm border border-gray-100">
                   <TextInput
-                    style={styles.input}
+                    className="flex-1 text-[15px] text-gray-800"
                     placeholder="Kullanıcı Adı"
                     placeholderTextColor="#A0A0A0"
                     value={username}
@@ -100,9 +101,9 @@ export default function SignUpScreen() {
                 </View>
 
                 {/* Email */}
-                <View style={styles.inputWrapper}>
+                <View className="flex-row items-center bg-white rounded-[25px] px-5 h-14 mb-4 shadow-sm border border-gray-100">
                   <TextInput
-                    style={styles.input}
+                    className="flex-1 text-[15px] text-gray-800"
                     placeholder="E-posta Adresi"
                     placeholderTextColor="#A0A0A0"
                     value={email}
@@ -113,9 +114,9 @@ export default function SignUpScreen() {
                 </View>
 
                 {/* Şifre */}
-                <View style={styles.inputWrapper}>
+                <View className="flex-row items-center bg-white rounded-[25px] px-5 h-14 mb-4 shadow-sm border border-gray-100">
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    className="flex-1 text-[15px] text-gray-800"
                     placeholder="Şifre"
                     placeholderTextColor="#A0A0A0"
                     value={password}
@@ -133,23 +134,31 @@ export default function SignUpScreen() {
                   </TouchableOpacity>
                 </View>
 
+                {/* Kayıt Butonu */}
                 <TouchableOpacity
-                  style={[styles.loginButton, loading && { opacity: 0.7 }]}
+                  className={`h-[60px] rounded-[30px] justify-center items-center mt-3 shadow-lg ${
+                    loading ? 'bg-teal-300 opacity-70' : 'bg-[#4ECDC4]'
+                  }`}
                   onPress={handleSignUp}
                   disabled={loading}
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.loginButtonText}>KAYIT OL</Text>
+                    <Text className="text-white text-lg font-bold tracking-widest">
+                      KAYIT OL
+                    </Text>
                   )}
                 </TouchableOpacity>
 
+                {/* Giriş Yap Linki */}
                 <Link href="/(auth)" asChild>
-                  <TouchableOpacity style={styles.footerLink}>
-                    <Text style={styles.footerText}>
+                  <TouchableOpacity className="mt-6 items-center">
+                    <Text className="text-gray-500 text-sm">
                       Zaten hesabınız var mı?{' '}
-                      <Text style={styles.footerLinkText}>GİRİŞ YAP</Text>
+                      <Text className="text-[#FF6B6B] font-bold">
+                        GİRİŞ YAP
+                      </Text>
                     </Text>
                   </TouchableOpacity>
                 </Link>
@@ -161,80 +170,3 @@ export default function SignUpScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 30,
-    justifyContent: 'center',
-  },
-  headerContainer: { alignItems: 'center', marginBottom: 40 },
-  brandWrapper: { alignItems: 'center' },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF4D4D',
-    marginBottom: -10,
-  },
-  brandText: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: '#333',
-    letterSpacing: 5,
-  },
-  welcomeText: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#444',
-    marginTop: 30,
-    letterSpacing: 1,
-  },
-  subtitleText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-    textAlign: 'center',
-  },
-  formContainer: { width: '100%' },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    height: 55,
-    marginBottom: 15,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  input: { fontSize: 15, color: '#333' },
-  loginButton: {
-    backgroundColor: '#4ECDC4',
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    elevation: 4,
-    shadowColor: '#4ECDC4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  footerLink: { marginTop: 25, alignItems: 'center' },
-  footerText: { color: '#666', fontSize: 14 },
-  footerLinkText: { color: '#FF6B6B', fontWeight: 'bold' },
-});

@@ -11,7 +11,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -49,51 +48,51 @@ export default function SignInScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       {/* Arka Plan Haritası - Asset klasörüne bir harita görseli eklemelisin */}
 
       <ImageBackground
         source={MapBG}
-        style={StyleSheet.absoluteFillObject} // Tüm ekranı kaplaması için
+        resizeMode="cover"
         imageStyle={{
-          opacity: 0.4, // Görseldeki gibi çok hafif olması için 0.1 civarı idealdir
-          resizeMode: 'cover', // Tüm alanı kapla
-          position: 'absolute',
-          top: 0, // En tepeden başla
-          height: '30%', // Ekranın sadece üst kısmını kaplaması için (Görseldeki gibi)
+          height: '30%',
         }}
+        imageClassName="opacity-50 absolute"
+        className="flex-1 top-0"
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView className="flex-1">
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
+            className="flex-1"
           >
             <ScrollView
-              contentContainerStyle={styles.scrollContainer}
+              contentContainerClassName="flex-grow px-8 justify-center"
               showsVerticalScrollIndicator={false}
             >
               {/* Logo Bölümü */}
-              <View style={styles.headerContainer}>
-                <Text style={styles.brandText}>VİYA</Text>
-                <View style={styles.brandUnderline} />
-                <Text style={styles.welcomeText}>HOŞ GELDİN!</Text>
+              <View className="items-center mb-14">
+                <Text className="text-[48px] font-[900] text-gray-800 tracking-[5px]">
+                  VİYA
+                </Text>
+                <View className="w-5 h-[3px] bg-[#FF4D4D] -mt-1" />
+                <Text className="text-xl font-semibold text-gray-700 mt-10 tracking-widest uppercase">
+                  Hoş Geldin!
+                </Text>
               </View>
 
-              {/* Form Bölümü */}
-              <View style={styles.formContainer}>
+              <View className="w-full">
                 {/* Sosyal Medya Butonu */}
-                <TouchableOpacity style={styles.socialButton}>
+                <TouchableOpacity className="flex-row items-center justify-center mb-6">
                   <Ionicons name="logo-google" size={20} color="#4A90E2" />
-                  <Text style={styles.socialButtonText}>
-                    {' '}
-                    VEYA SOSYAL MEDYA İLE DEVAM ET
+                  <Text className="text-[12px] font-bold text-gray-800 ml-2 uppercase">
+                    Veya sosyal medya ile devam et
                   </Text>
                 </TouchableOpacity>
 
                 {/* Email Girişi */}
-                <View style={styles.inputWrapper}>
+                <View className="flex-row items-center bg-white rounded-[25px] px-5 h-14 mb-4 shadow-sm border border-gray-100">
                   <TextInput
-                    style={styles.input}
+                    className="flex-1 text-[15px] text-gray-800"
                     placeholder="E-posta Adresi"
                     placeholderTextColor="#A0A0A0"
                     value={email}
@@ -103,9 +102,9 @@ export default function SignInScreen() {
                 </View>
 
                 {/* Şifre Girişi */}
-                <View style={styles.inputWrapper}>
+                <View className="flex-row items-center bg-white rounded-[25px] px-5 h-14 mb-4 shadow-sm border border-gray-100">
                   <TextInput
-                    style={[styles.input, { flex: 1 }]}
+                    className="flex-1 text-[15px] text-gray-800"
                     placeholder="Şifrem?"
                     placeholderTextColor="#A0A0A0"
                     value={password}
@@ -125,23 +124,27 @@ export default function SignInScreen() {
 
                 {/* Giriş Butonu */}
                 <TouchableOpacity
-                  style={[styles.loginButton, loading && { opacity: 0.7 }]}
+                  className={`h-[60px] rounded-[30px] justify-center items-center mt-5 shadow-lg ${
+                    loading ? 'bg-teal-300 opacity-70' : 'bg-[#4ECDC4]'
+                  }`}
                   onPress={handleSignIn}
                   disabled={loading}
                 >
                   {loading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.loginButtonText}>GİRİŞ YAP</Text>
+                    <Text className="text-white text-lg font-bold tracking-widest">
+                      GİRİŞ YAP
+                    </Text>
                   )}
                 </TouchableOpacity>
 
                 {/* Kayıt Ol Linki */}
                 <Link href="/(auth)/signup" asChild>
-                  <TouchableOpacity style={styles.footerLink}>
-                    <Text style={styles.footerText}>
+                  <TouchableOpacity className="mt-6 items-center">
+                    <Text className="text-gray-500 text-[14px]">
                       Hesabın yok mu?{' '}
-                      <Text style={styles.footerLinkText}>KAYIT OL</Text>
+                      <Text className="text-[#FF6B6B] font-bold">KAYIT OL</Text>
                     </Text>
                   </TouchableOpacity>
                 </Link>
@@ -153,107 +156,3 @@ export default function SignInScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  bgImage: { flex: 1, width: '100%' },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 30,
-    justifyContent: 'center',
-  },
-
-  headerContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  brandText: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: '#333',
-    letterSpacing: 5,
-  },
-  brandUnderline: {
-    width: 20,
-    height: 3,
-    backgroundColor: '#FF4D4D', // Logodaki küçük kırmızı detay
-    marginTop: -5,
-  },
-  welcomeText: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#444',
-    marginTop: 40,
-    letterSpacing: 1,
-  },
-
-  formContainer: {
-    width: '100%',
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 25,
-  },
-  socialButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#333',
-  },
-
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    height: 55,
-    marginBottom: 15,
-    // Soft Shadow (Görseldeki gibi hafif gölge)
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  input: {
-    fontSize: 15,
-    color: '#333',
-  },
-
-  loginButton: {
-    backgroundColor: '#4ECDC4', // Görseldeki turkuaz tonu
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-    elevation: 4,
-    shadowColor: '#4ECDC4',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-
-  footerLink: {
-    marginTop: 25,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: '#666',
-    fontSize: 14,
-  },
-  footerLinkText: {
-    color: '#FF6B6B', // Kayıt ol vurgu rengi
-    fontWeight: 'bold',
-  },
-});
