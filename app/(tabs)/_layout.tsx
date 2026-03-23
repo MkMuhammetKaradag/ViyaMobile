@@ -35,7 +35,7 @@ export default function TabsLayout() {
         name="profile/profile_edit"
         options={{
           href: null, // Alt barda gizler
-          headerShown: true, // Düzenleme sayfasında üst başlık olsun
+          headerShown: false,
           title: 'Profili Düzenle',
         }}
       />
