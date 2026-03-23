@@ -51,19 +51,10 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'fade',
-          contentStyle: { backgroundColor: '#FFFFFF' },
-        }}
-      >
-        <Stack.Screen name="(auth)/index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/signup" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="(tabs)/home"
-          options={{ headerShown: true, title: 'Ana Sayfa' }}
-        />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        {/* Sadece bu yeterli, içindekileri kendi layout'u halledecek */}
       </Stack>
     </SafeAreaProvider>
   );
