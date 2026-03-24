@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -18,10 +19,20 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProfile();
+    setRefreshing(false);
+  };
   useEffect(() => {
     fetchProfile();
   }, []);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchProfile(); // Sayfa her odaklandığında (focus) veriyi çeker
+  //   }, []),
+  // );
 
   const fetchProfile = async () => {
     try {
@@ -47,7 +58,17 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1 px-6">
+      <ScrollView
+        className="flex-1 px-6"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4ECDC4']} // Android için renk
+            tintColor="#4ECDC4" // iOS için renk
+          />
+        }
+      >
         {/* Header Kısmı */}
         <View className="items-center mt-8 mb-6">
           <View className="w-24 h-24 bg-gray-200 rounded-full overflow-hidden items-center justify-center mb-4 border-2 border-gray-100 shadow-sm">

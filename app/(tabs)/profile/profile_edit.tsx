@@ -65,7 +65,8 @@ export default function ProfileEditScreen() {
         preferences: preferences,
       });
       Alert.alert('Başarılı', 'Profilin güncellendi! 🚀');
-      router.back();
+      // router.back();
+      router.navigate('/(tabs)/profile');
     } catch (err) {
       Alert.alert('Hata', 'Güncelleme başarısız oldu.');
     } finally {
