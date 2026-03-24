@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { apiClient } from '../../src/api/client'; // Kendi dosya yoluna göre ayarla
+import { apiClient } from '../../../src/api/client'; // Kendi dosya yoluna göre ayarla
 
 export default function HomeScreen() {
   const router = useRouter();

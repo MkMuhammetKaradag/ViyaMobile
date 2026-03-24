@@ -10,9 +10,10 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="home" // app/(tabs)/home.tsx'i açar
+        name="home/index" // app/(tabs)/home.tsx'i açar
         options={{
-          title: 'Ana Sayfa',
+          headerShown: false,
+          title: 'Home',
           tabBarIcon: ({ color }) => (
             <Ionicons name="home" size={24} color={color} />
           ),
@@ -20,7 +21,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="profile/index" // app/(tabs)/profile/index.tsx'i açar
+        name="profile" // app/(tabs)/profile/index.tsx'i açar
         options={{
           headerShown: false,
           title: 'Profil',
@@ -31,14 +32,14 @@ export default function TabsLayout() {
       />
 
       {/* profile_edit'i tab barda gizlemek için: */}
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="profile/profile_edit"
         options={{
           href: null, // Alt barda gizler
           headerShown: false,
           title: 'Profili Düzenle',
         }}
-      />
+      /> */}
     </Tabs>
   );
 }

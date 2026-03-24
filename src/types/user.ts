@@ -8,5 +8,6 @@ export interface UserProfile {
   location: string | null;
   website: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
   preferences: string[];
 }
