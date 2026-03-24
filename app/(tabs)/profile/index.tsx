@@ -28,6 +28,7 @@ export default function ProfileScreen() {
         '/api/v1/users/me',
       );
       setUser(response.data.user);
+      console.log(response.data.user);
     } catch (error) {
       console.error('Profil çekme hatası:', error);
     } finally {
