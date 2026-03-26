@@ -82,20 +82,29 @@ export default function ProfileScreen() {
     const init = async () => {
       setLoading(true);
       if (!user) {
-        fetchUser(); // Sadece veri yoksa çek
+        await fetchUser();
       }
       await fetchUserTrips(1); // Profil bittikten sonra rotaları çek
       setLoading(false);
     };
     init();
   }, []);
-  const onRefresh = () => {
+  const onRefresh = async () => {
+    // async ekledik
     setRefreshing(true);
-    // fetchProfile();
-    if (!user) {
-      fetchUser(); // Sadece veri yoksa çek
+    try {
+      // 1. Kullanıcı verisini tazele (Zustand üzerinden)
+      // Not: fetchUser'ın Promise döndürdüğünden emin ol, beklemesi için await şart.
+      await fetchUser();
+
+      // 2. Rotaları en baştan çek (Sayfa 1'e dön)
+      await fetchUserTrips(1);
+    } catch (error) {
+      console.error('Yenileme hatası:', error);
+    } finally {
+      // 🔥 KRİTİK NOKTA: İşlem bitti (başarılı veya hatalı), simgeyi kapat!
+      setRefreshing(false);
     }
-    fetchUserTrips(1);
   };
   const isCloseToBottom = ({
     layoutMeasurement,
@@ -158,7 +167,9 @@ export default function ProfileScreen() {
             <TripCard
               key={item.id}
               trip={item}
-              onPress={(id) => router.push(`/(tabs)/profile`)}
+              onPress={(id) =>
+                router.push({ pathname: '/trip/[id]', params: { id: id } })
+              }
             />
           ))}
           {tripsLoading && trips.length === 0 && (
