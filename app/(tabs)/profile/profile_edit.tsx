@@ -1,3 +1,4 @@
+import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import { apiClient } from '../../../src/api/client';
 import { UserProfile } from '../../../src/types/user';
 export default function ProfileEditScreen() {
   const router = useRouter();
+  const { updateUserLocal } = useUserStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
@@ -76,17 +78,26 @@ export default function ProfileEditScreen() {
   const handleUpdate = async () => {
     setSaving(true);
     try {
-      await apiClient.put('/api/v1/users/update-profile', {
-        first_name: firstName || null, // Boşsa null gönder (Go tarafındaki pointer için)
+      const payload = {
+        first_name: firstName || null,
         last_name: lastName || null,
         bio: bio || null,
         location: location || null,
         website: website || null,
         preferences: preferences,
+      };
+
+      await apiClient.put('/api/v1/users/update-profile', payload);
+      updateUserLocal({
+        first_name: firstName,
+        last_name: lastName,
+        bio: bio,
+        location: location,
+        website: website,
       });
       Alert.alert('Başarılı', 'Profilin güncellendi! 🚀');
-      // router.back();
-      router.navigate('/(tabs)/profile');
+      // router.navigate('/(tabs)/profile');
+      router.back();
     } catch (err) {
       Alert.alert('Hata', 'Güncelleme başarısız oldu.');
     } finally {
@@ -96,8 +107,6 @@ export default function ProfileEditScreen() {
   // Backend'e Yükleme (Postman'deki mantığın kod hali)
   const uploadImage = async (uri: string, type: 'avatar' | 'banner') => {
     const formData = new FormData();
-
-    // React Native'de dosya gönderirken bu format şarttır:
     const fileToUpload = {
       uri: uri,
       name: type === 'avatar' ? 'avatar.jpg' : 'banner.jpg',
@@ -111,11 +120,26 @@ export default function ProfileEditScreen() {
         type === 'avatar'
           ? '/api/v1/users/upload-avatar'
           : '/api/v1/users/upload-banner';
-      await apiClient.post(endpoint, formData, {
+
+      // Backend'den dönen yanıtı (response) alalım
+      const res = await apiClient.post<{
+        message: string;
+        avatar_url?: string;
+        banner_url?: string;
+      }>(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+
+      // 🔥 KRİTİK NOKTA: Zustand Store'u yeni URL ile güncelle
+      if (type === 'avatar' && res.data.avatar_url) {
+        updateUserLocal({ avatar_url: res.data.avatar_url });
+      } else if (type === 'banner' && res.data.banner_url) {
+        updateUserLocal({ banner_url: res.data.banner_url });
+      }
+
       Alert.alert('Başarılı', 'Fotoğraf güncellendi!');
     } catch (error) {
+      console.error('Yükleme hatası:', error);
       Alert.alert('Hata', 'Fotoğraf yüklenemedi.');
     }
   };

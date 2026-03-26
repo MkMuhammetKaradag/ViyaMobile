@@ -1,5 +1,6 @@
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import { TripCard } from '@/components/profile/TripCard';
+import { useUserStore } from '@/src/store/useUserStore';
 import { TripSummary } from '@/src/types/trip';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -13,33 +14,33 @@ import {
   View,
 } from 'react-native';
 import { apiClient } from '../../../src/api/client';
-import { UserProfile } from '../../../src/types/user';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const { user, fetchUser } = useUserStore();
+  // const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [trips, setTrips] = useState<TripSummary[]>([]); // TripSummary
   const [page, setPage] = useState(1);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const fetchProfile = async () => {
-    try {
-      const response = await apiClient.get<{ user: UserProfile }>(
-        '/api/v1/users/me',
-      );
-      setUser(response.data.user);
-      console.log(response.data.user);
-    } catch (error) {
-      console.error('Profil çekme hatası:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  // const fetchProfile = async () => {
+  //   try {
+  //     const response = await apiClient.get<{ user: UserProfile }>(
+  //       '/api/v1/users/me',
+  //     );
+  //     setUser(response.data.user);
+  //     console.log(response.data.user);
+  //   } catch (error) {
+  //     console.error('Profil çekme hatası:', error);
+  //   } finally {
+  //     setLoading(false);
+  //     setRefreshing(false);
+  //   }
+  // };
 
   const fetchUserTrips = async (pageNum = 1) => {
     const LIMIT = 12;
@@ -80,7 +81,9 @@ export default function ProfileScreen() {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await fetchProfile();
+      if (!user) {
+        fetchUser(); // Sadece veri yoksa çek
+      }
       await fetchUserTrips(1); // Profil bittikten sonra rotaları çek
       setLoading(false);
     };
@@ -88,7 +91,10 @@ export default function ProfileScreen() {
   }, []);
   const onRefresh = () => {
     setRefreshing(true);
-    fetchProfile();
+    // fetchProfile();
+    if (!user) {
+      fetchUser(); // Sadece veri yoksa çek
+    }
     fetchUserTrips(1);
   };
   const isCloseToBottom = ({
