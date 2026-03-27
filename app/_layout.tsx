@@ -54,7 +54,6 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
-        {/* Sadece bu yeterli, içindekileri kendi layout'u halledecek */}
       </Stack>
     </SafeAreaProvider>
   );

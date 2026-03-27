@@ -1,45 +1,61 @@
 import { Ionicons } from '@expo/vector-icons'; // Expo ile hazır gelir
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 
 export default function TabsLayout() {
+  const router = useRouter();
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#4ECDC4',
+        tabBarInactiveTintColor: '#94a3b8',
+        tabBarStyle: {
+          // height: 60,
+          // paddingBottom: 20,
+          // paddingTop: 8,s
+        },
         headerShown: false,
       }}
     >
       <Tabs.Screen
-        name="home/index" // app/(tabs)/home.tsx'i açar
+        name="home/index"
         options={{
-          headerShown: false,
-          title: 'Home',
+          title: '',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={24} color={color} />
+            <Ionicons name="home" size={26} color={color} />
           ),
         }}
       />
 
       <Tabs.Screen
-        name="profile" // app/(tabs)/profile/index.tsx'i açar
+        name="create-trip-handler" // Gerçek bir dosya olmasına gerek yok
         options={{
-          headerShown: false,
-          title: 'Profil',
+          title: '', // Yazı olmasın
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person" size={24} color={color} />
+            <Ionicons
+              name="add-circle"
+              size={26}
+              color={color}
+              // style={{ marginBottom: 4 }} // Biraz yukarı taşsın
+            />
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault(); // Sayfaya gitmesini engelle
+            router.push('/trip/create'); // Bizim modalı aç!
+          },
         }}
       />
 
-      {/* profile_edit'i tab barda gizlemek için: */}
-      {/* <Tabs.Screen
-        name="profile/profile_edit"
+      <Tabs.Screen
+        name="profile"
         options={{
-          href: null, // Alt barda gizler
-          headerShown: false,
-          title: 'Profili Düzenle',
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person" size={26} color={color} />
+          ),
         }}
-      /> */}
+      />
     </Tabs>
   );
 }
