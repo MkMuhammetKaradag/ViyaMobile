@@ -1,15 +1,19 @@
+import { WaypointCardDetail } from '@/components/trip/WaypointCardDetail';
 import { apiClient } from '@/src/api/client';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -26,7 +30,7 @@ export default function TripDetailScreen() {
       const res = await apiClient.get(`/api/v1/trips/${id}`);
       setTrip(res.data.trip);
     } catch (err) {
-      console.error('Detay çekme hatası:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -35,37 +39,110 @@ export default function TripDetailScreen() {
   if (loading) return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      {/* Üst Kısım: Geri Butonu ve Resim */}
-      <View className="h-80 w-full relative">
-        <Image
-          source={{
-            uri: trip?.cover_image_url || 'https://via.placeholder.com/800',
-          }}
-          className="w-full h-full"
-          resizeMode="cover"
-        />
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="absolute top-12 left-6 bg-white/80 p-2 rounded-full"
-        >
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+    <View className="flex-1 bg-white">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* 🏔️ Ana Kapak Resmi  */}
+        <View className="relative h-[450px] w-full">
+          <Image
+            source={{
+              uri:
+                trip?.cover_image_url ||
+                'https://images.unsplash.com/photo-1500622397060-4356c77028f3?q=80&w=2070&auto=format&fit=crop',
+            }}
+            className="w-full h-full"
+          />
+          {/* Overlay Gradient (Yazıların okunması için) */}
+          <View className="absolute inset-0 bg-black/30" />
 
-      {/* İçerik */}
-      <View className="p-6 -mt-10 bg-white rounded-t-[40px] shadow-2xl">
-        <Text className="text-2xl font-black text-gray-800">{trip?.title}</Text>
-        <Text className="text-gray-500 mt-2 leading-6">
-          {trip?.description}
-        </Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="absolute top-14 left-6 bg-white/20 p-2 rounded-full backdrop-blur-md"
+          >
+            <Ionicons name="chevron-back" size={24} color="white" />
+          </TouchableOpacity>
 
-        {/* Buraya durakları (waypoints) listeleyen bir component gelecek */}
-        <View className="mt-8">
-          <Text className="text-lg font-bold mb-4">Rota Durakları</Text>
-          {/* Map veya Timeline burada olacak */}
+          <View className="absolute bottom-12 left-6 right-6">
+            <View className="flex-row items-center mb-2">
+              <View className="bg-[#4ECDC4] px-3 py-1 rounded-full">
+                <Text className="text-white font-bold text-[10px] uppercase">
+                  Rota
+                </Text>
+              </View>
+              <Text className="text-white/80 text-xs ml-3 font-medium">
+                {new Date(trip?.published_at).toLocaleDateString('tr-TR')}
+              </Text>
+            </View>
+            <Text className="text-white text-4xl font-black">
+              {trip?.title}
+            </Text>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        {/* 📊 Etkileşim Barı (Beğeni, Görüntülenme, Yorum Butonu) */}
+        <View className="flex-row items-center justify-between px-6 py-5 border-b border-gray-100">
+          <View className="flex-row items-center space-x-6">
+            <TouchableOpacity className="flex-row items-center">
+              <Ionicons name="heart-outline" size={26} color="#374151" />
+              <Text className="ml-2 font-bold text-gray-700">1.2k</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center"
+              onPress={() => {
+                /* Yorum modalı */
+              }}
+            >
+              <Ionicons name="chatbubble-outline" size={24} color="#374151" />
+              <Text className="ml-2 font-bold text-gray-700">48</Text>
+            </TouchableOpacity>
+
+            <View className="flex-row items-center">
+              <Ionicons name="eye-outline" size={24} color="#374151" />
+              <Text className="ml-2 font-bold text-gray-700">
+                {trip?.view_count}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity>
+            <Ionicons name="share-social-outline" size={24} color="#374151" />
+          </TouchableOpacity>
+        </View>
+
+        {/* 📝 Açıklama */}
+        <View className="p-6">
+          <Text className="text-gray-600 leading-7 text-base italic">
+            "{trip?.description}"
+          </Text>
+        </View>
+
+        {/* 📍 Duraklar  */}
+        <View className="px-6 pb-20">
+          <Text className="text-xl font-black text-gray-900 mb-6">
+            Yolculuk Durakları
+          </Text>
+
+          {trip?.waypoints?.map((wp: any, index: number) => (
+            <WaypointCardDetail
+              key={wp.id}
+              waypoint={wp}
+              isLast={index === trip.waypoints.length - 1}
+              index={index}
+            />
+          ))}
+        </View>
+      </ScrollView>
+
+      {/* 💬 Sabit Yorum Yap Butonu */}
+      {/* <TouchableOpacity
+        className="absolute bottom-10 self-center bg-gray-900 px-8 py-4 rounded-full shadow-2xl flex-row items-center"
+        onPress={() => Alert.alert('Yakında', 'Yorum sistemi aktif edilecek.')}
+      >
+        <Ionicons name="chatbox" size={20} color="#4ECDC4" />
+        <Text className="text-white font-bold ml-3 text-base">
+          Yorumları Gör
+        </Text>
+      </TouchableOpacity> */}
+    </View>
   );
 }

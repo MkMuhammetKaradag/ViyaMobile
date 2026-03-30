@@ -17,12 +17,13 @@ export const uploadToCloudinary = async (fileUri: string): Promise<string> => {
   const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME!;
   const uploadPreset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
   const formData = new FormData();
-
+  const uriParts = fileUri.split('.');
+  const fileType = uriParts[uriParts.length - 1];
   // ⚠️ KRİTİK: React Native'de FormData'ya dosya eklerken bu format şarttır.
   formData.append('file', {
     uri: fileUri,
-    type: 'image/jpeg', // Dosya tipini gerekirse dinamik yapabilirsin
-    name: 'upload.jpg',
+    type: `image/${fileType}`,
+    name: `upload.${fileType}`,
   } as any);
 
   formData.append('upload_preset', uploadPreset);

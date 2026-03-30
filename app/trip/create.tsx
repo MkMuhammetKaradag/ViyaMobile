@@ -3,6 +3,7 @@ import { apiClient } from '@/src/api/client';
 
 import { uploadToCloudinary } from '@/src/utils/cloudinary'; // Buraya kendi upload fonksiyonunu koy
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as ExpoLocation from 'expo-location';
 import { useRouter } from 'expo-router';
@@ -10,6 +11,7 @@ import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Modal,
   ScrollView,
   Switch,
@@ -19,7 +21,7 @@ import {
   View,
 } from 'react-native';
 import MapView from 'react-native-maps';
-
+const { width: screenWidth } = Dimensions.get('window');
 export default function CreateTripScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,25 @@ export default function CreateTripScreen() {
   const [waypoints, setWaypoints] = useState<any[]>([]);
   const [mapVisible, setMapVisible] = useState(false);
   const [selectedWpIndex, setSelectedWpIndex] = useState<number | null>(null);
+  const [taggingModalVisible, setTaggingModalVisible] = useState(false);
+
+  // Hangi resme etiket atıyoruz? (Hata almamak için tipi belirledik)
+  const [currentPhoto, setCurrentPhoto] = useState<{
+    wpIdx: number;
+    photoIdx: number;
+  } | null>(null);
+
+  // Resmin o anki ekran genişliğini tutmak için (Oranlama yapmak için şart)
+  const [imageLayout, setImageLayout] = useState({ width: 0, height: 0 });
+
+  const [tagName, setTagName] = useState('');
+  const [inputModalVisible, setInputModalVisible] = useState(false);
+  const [tempCoords, setTempCoords] = useState({ x: 0, y: 0 });
+
+  const [currentPhotoForTag, setCurrentPhotoForTag] = useState<{
+    wpIdx: number;
+    photoIdx: number;
+  } | null>(null);
   const [tempRegion, setTempRegion] = useState({
     latitude: 39.9334,
     longitude: 32.8597,
@@ -105,15 +126,73 @@ export default function CreateTripScreen() {
     updated[index][field] = value;
     setWaypoints(updated);
   };
+  const handlePhotoPress = (event: any) => {
+    const { locationX, locationY } = event.nativeEvent;
+    const xPercent = (locationX / imageLayout.width) * 100;
+    const yPercent = (locationY / imageLayout.height) * 100;
+
+    setTempCoords({ x: xPercent, y: yPercent });
+    setTagName(''); // Kutuyu temizle
+    setInputModalVisible(true); // Yazı yazma modalını aç
+  };
+
+  const deleteTag = (tagIdx: number) => {
+    if (!currentPhoto) return;
+    const { wpIdx, photoIdx } = currentPhoto;
+
+    Alert.alert('Etiketi Sil', 'Bu etiketi kaldırmak istiyor musun?', [
+      { text: 'Vazgeç', style: 'cancel' },
+      {
+        text: 'Sil',
+        style: 'destructive',
+        onPress: () => {
+          const updated = [...waypoints];
+          updated[wpIdx].photos[photoIdx].tags.splice(tagIdx, 1);
+          setWaypoints(updated);
+        },
+      },
+    ]);
+  };
+
+  const saveNewTag = () => {
+    if (!tagName || !currentPhoto) return;
+
+    const { wpIdx, photoIdx } = currentPhoto;
+    const updated = [...waypoints];
+
+    if (!updated[wpIdx].photos[photoIdx].tags) {
+      updated[wpIdx].photos[photoIdx].tags = [];
+    }
+
+    updated[wpIdx].photos[photoIdx].tags.push({
+      label: tagName,
+      x_pos: tempCoords.x,
+      y_pos: tempCoords.y,
+    });
+
+    setWaypoints(updated);
+    setInputModalVisible(false);
+  };
 
   const handlePickImage = async (index: number) => {
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.5 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 5],
+      quality: 0.8,
+    });
+
     if (!result.canceled) {
       setUploadingIndex(index);
       try {
         const url = await uploadToCloudinary(result.assets[0].uri);
+
         const updated = [...waypoints];
-        updated[index].photos.push(url);
+        // ARTIK BURASI BİR OBJE: { url, tags }
+        updated[index].photos.push({
+          url: url,
+          tags: [], // Başlangıçta etiket boş
+        });
+
         setWaypoints(updated);
       } catch (e) {
         Alert.alert('Hata', 'Resim yüklenemedi.');
@@ -122,34 +201,54 @@ export default function CreateTripScreen() {
       }
     }
   };
-  // 1. Resim Silme Fonksiyonu
-  const handleRemoveImage = (wpIndex: number, imgIndex: number) => {
-    const updated = [...waypoints];
-    updated[wpIndex].photos.splice(imgIndex, 1); // Belirli indeksteki resmi diziden çıkar
-    setWaypoints(updated);
-  };
-
   const handleSave = async () => {
     if (title.length < 3) return Alert.alert('Hata', 'Başlık çok kısa.');
     setLoading(true);
+
     try {
       const payload = {
         title,
         desc,
         is_active: isActive,
         is_public: isPublic,
-        waypoints,
+        waypoints: waypoints.map((wp) => ({
+          ...wp,
+          photos: wp.photos.map((p: any) => ({
+            url: p.url,
+            tags: p.tags || [],
+          })),
+        })),
         published_at: new Date().toISOString(),
       };
+
       await apiClient.post('/api/v1/trips', payload);
       router.back();
     } catch (e) {
+      console.log('Kaydetme Hatası:', e);
       Alert.alert('Hata', 'Kaydedilemedi.');
     } finally {
       setLoading(false);
     }
   };
-
+  const openTaggingModal = (wpIdx: number, photoIdx: number) => {
+    setCurrentPhoto({ wpIdx, photoIdx }); // Hangi resim olduğunu kaydet
+    setTaggingModalVisible(true); // Modalı aç
+  };
+  const addTagToPhoto = (
+    wpIndex: number,
+    photoIndex: number,
+    label: string,
+    x: number,
+    y: number,
+  ) => {
+    const updated = [...waypoints];
+    updated[wpIndex].photos[photoIndex].tags.push({
+      label: label,
+      x_pos: x,
+      y_pos: y,
+    });
+    setWaypoints(updated);
+  };
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 bg-white px-6">
@@ -245,6 +344,10 @@ export default function CreateTripScreen() {
             }}
             onOpenMap={() => handleOpenMap(i)}
             isUploading={uploadingIndex === i}
+            onEditTags={(photoIdx: number) => {
+              setCurrentPhoto({ wpIdx: i, photoIdx: photoIdx });
+              setTaggingModalVisible(true);
+            }}
           />
         ))}
 
@@ -325,6 +428,110 @@ export default function CreateTripScreen() {
             >
               <Text className="font-black text-white text-lg">KONUMU SEÇ</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={taggingModalVisible} animationType="fade">
+        <View className="flex-1 bg-black items-center justify-center">
+          {/* 1. Kontrol: currentPhoto var mı ve veri dolu mu? */}
+          {currentPhoto &&
+          waypoints[currentPhoto.wpIdx]?.photos[currentPhoto.photoIdx] ? (
+            <View
+              style={{ width: screenWidth, height: screenWidth * 1.25 }}
+              className="relative bg-gray-900"
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={(e) => handlePhotoPress(e)} // 👈 Arrow function ile sarmala
+                onLayout={(e) => {
+                  const { width, height } = e.nativeEvent.layout;
+                  console.log('Resim Boyutları:', width, height);
+                  setImageLayout({ width, height });
+                }}
+                style={{ width: '100%', height: '100%' }}
+              >
+                <Image
+                  source={{
+                    uri: waypoints[currentPhoto.wpIdx].photos[
+                      currentPhoto.photoIdx
+                    ].url,
+                  }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                  pointerEvents="none" // 👈 Resmin tıklamayı engellememesi için
+                />
+
+                {/* Etiketler */}
+                {waypoints[currentPhoto.wpIdx].photos[
+                  currentPhoto.photoIdx
+                ].tags?.map((tag: any, i: number) => {
+                  const isRightSide = tag.x_pos > 50;
+                  return (
+                    <View
+                      key={i}
+                      style={{
+                        position: 'absolute',
+                        left: `${tag.x_pos}%`,
+                        top: `${tag.y_pos}%`,
+                        transform: [{ translateX: isRightSide ? -80 : -10 }],
+                        maxWidth: 120,
+                        zIndex: 99,
+                      }}
+                      className="bg-[#4ECDC4] px-3 py-1.5 rounded-full border border-white shadow-lg flex-row items-center"
+                    >
+                      <Text
+                        numberOfLines={1}
+                        className="text-white text-[10px] font-black italic"
+                      >
+                        {tag.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <ActivityIndicator color="white" size="large" />
+          )}
+
+          {/* Kapatma Butonu Alt Kısımda Daha Rahat Olur */}
+          <TouchableOpacity
+            onPress={() => setTaggingModalVisible(false)}
+            className="mt-10 bg-white/10 px-10 py-4 rounded-3xl border border-white/20"
+          >
+            <Text className="text-white font-bold">KAPAT</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <Modal visible={inputModalVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/80 justify-center px-10">
+          <View className="bg-white p-6 rounded-[32px]">
+            <Text className="text-lg font-black mb-4 text-gray-800 text-center">
+              Etiket İsmi
+            </Text>
+            <TextInput
+              placeholder="Örn: Buranın kahvesi meşhur"
+              value={tagName}
+              onChangeText={setTagName}
+              autoFocus
+              className="bg-gray-100 p-4 rounded-2xl mb-6 font-bold"
+            />
+            <View className="flex-row gap-x-3">
+              <TouchableOpacity
+                onPress={() => setInputModalVisible(false)}
+                className="flex-1 p-4 rounded-2xl bg-gray-200 items-center"
+              >
+                <Text className="font-bold text-gray-500">İptal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={saveNewTag}
+                className="flex-2 p-4 rounded-2xl bg-[#4ECDC4] items-center px-10"
+              >
+                <Text className="text-white font-bold">EKLE</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

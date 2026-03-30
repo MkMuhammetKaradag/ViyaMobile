@@ -15,8 +15,10 @@ interface WaypointCardProps {
   onUpdate: (field: string, value: any) => void;
   onRemove: () => void;
   onPickImage: () => void;
-  onRemoveImage: (imageIndex: number) => void; // Yeni: Resim silme
-  onOpenMap: () => void; // Yeni: Haritayı açma
+  onRemoveImage: (imageIndex: number) => void;
+  onOpenMap: () => void;
+  onEditTags: (photoIdx: number) => void;
+
   isUploading: boolean;
 }
 
@@ -29,6 +31,7 @@ export const WaypointCard = ({
   onRemoveImage,
   onOpenMap,
   isUploading,
+  onEditTags,
 }: WaypointCardProps) => {
   return (
     <View className="bg-gray-50 p-5 rounded-[32px] mb-6 border border-gray-200 shadow-sm">
@@ -88,22 +91,26 @@ export const WaypointCard = ({
         Fotoğraflar
       </Text>
       <View className="flex-row flex-wrap">
-        {waypoint.photos.map((photo: string, pIdx: number) => (
+        {waypoint.photos.map((photoObj: any, pIdx: number) => (
           <View key={pIdx} className="relative mr-2 mb-2">
-            <Image
-              source={{ uri: photo }}
-              className="w-20 h-20 rounded-2xl border border-gray-100"
-            />
-            {/* Resim Silme Butonu */}
             <TouchableOpacity
-              onPress={() => onRemoveImage(pIdx)}
-              className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 items-center justify-center border-2 border-white"
+              onPress={() => onEditTags(pIdx)} // 👈
             >
-              <Ionicons name="close" size={12} color="white" />
+              <Image
+                source={{ uri: photoObj.url }} // 👈
+                className="w-20 h-20 rounded-2xl border border-gray-100"
+              />
+              {photoObj.tags?.length > 0 && (
+                <View className="absolute bottom-1 right-1 bg-[#4ECDC4] rounded-full p-1">
+                  <Text className="text-[8px] text-white font-bold">
+                    {photoObj.tags.length}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
+            {/* Silme butonu aynı kalıyor... */}
           </View>
         ))}
-
         <TouchableOpacity
           onPress={onPickImage}
           disabled={isUploading}
