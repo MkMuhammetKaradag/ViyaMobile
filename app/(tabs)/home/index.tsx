@@ -1,3 +1,4 @@
+import { useUserStore } from '@/src/store/useUserStore';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React from 'react';
@@ -6,7 +7,7 @@ import { apiClient } from '../../../src/api/client'; // Kendi dosya yoluna göre
 
 export default function HomeScreen() {
   const router = useRouter();
-
+  const { logout } = useUserStore();
   const handleSignOut = async () => {
     try {
       // 1. Backend'e çıkış isteği at (Cookie'yi temizlemesi için)
@@ -14,7 +15,7 @@ export default function HomeScreen() {
 
       // 2. Yerel saklanan flag varsa temizle
       await SecureStore.deleteItemAsync('hasSession');
-
+      logout();
       Alert.alert('Çıkış Yapıldı', 'Başarıyla çıkış yaptınız.');
 
       // 3. Giriş ekranına geri dön

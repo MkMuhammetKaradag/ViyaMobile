@@ -9,6 +9,7 @@ interface UserState {
   setUser: (user: UserProfile) => void;
   fetchUser: () => Promise<void>;
   updateUserLocal: (updatedData: Partial<UserProfile>) => void;
+  logout: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -36,4 +37,5 @@ export const useUserStore = create<UserState>((set) => ({
     set((state) => ({
       user: state.user ? { ...state.user, ...updatedData } : null,
     })),
+  logout: () => set({ user: null, loading: false }),
 }));
