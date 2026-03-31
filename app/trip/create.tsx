@@ -1,8 +1,8 @@
 import { WaypointCard } from '@/components/trip/WaypointCard';
 import { apiClient } from '@/src/api/client';
-
 import { uploadToCloudinary } from '@/src/utils/cloudinary'; // Buraya kendi upload fonksiyonunu koy
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as ExpoLocation from 'expo-location';
@@ -13,6 +13,7 @@ import {
   Alert,
   Dimensions,
   Modal,
+  Platform,
   ScrollView,
   Switch,
   Text,
@@ -37,6 +38,17 @@ export default function CreateTripScreen() {
   const [mapVisible, setMapVisible] = useState(false);
   const [selectedWpIndex, setSelectedWpIndex] = useState<number | null>(null);
   const [taggingModalVisible, setTaggingModalVisible] = useState(false);
+  const [publishedAt, setPublishedAt] = useState(new Date()); // Varsayılan ŞİMDİ
+  const [showPicker, setShowPicker] = useState(false);
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    // Android'de seçim yapınca picker kapanmalı
+    if (Platform.OS === 'android') setShowPicker(false);
+
+    if (selectedDate) {
+      setPublishedAt(selectedDate);
+    }
+  };
 
   // Hangi resme etiket atıyoruz? (Hata almamak için tipi belirledik)
   const [currentPhoto, setCurrentPhoto] = useState<{
@@ -50,11 +62,8 @@ export default function CreateTripScreen() {
   const [tagName, setTagName] = useState('');
   const [inputModalVisible, setInputModalVisible] = useState(false);
   const [tempCoords, setTempCoords] = useState({ x: 0, y: 0 });
+  const [editingTagIndex, setEditingTagIndex] = useState<number | null>(null);
 
-  const [currentPhotoForTag, setCurrentPhotoForTag] = useState<{
-    wpIdx: number;
-    photoIdx: number;
-  } | null>(null);
   const [tempRegion, setTempRegion] = useState({
     latitude: 39.9334,
     longitude: 32.8597,
@@ -71,6 +80,17 @@ export default function CreateTripScreen() {
       });
     }
     setMapVisible(true);
+  };
+  const deleteTag = () => {
+    if (editingTagIndex === null || !currentPhoto) return;
+    const { wpIdx, photoIdx } = currentPhoto;
+
+    const updated = [...waypoints];
+    updated[wpIdx].photos[photoIdx].tags.splice(editingTagIndex, 1);
+
+    setWaypoints(updated);
+    setInputModalVisible(false);
+    setEditingTagIndex(null); // Reset
   };
   const goToMyLocation = async () => {
     const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
@@ -97,6 +117,11 @@ export default function CreateTripScreen() {
       1000,
     );
   };
+  const handleEditTag = (index: number, label: string) => {
+    setEditingTagIndex(index); // Hangi etikete tıklandığını kaydet
+    setTagName(label); // Mevcut ismi inputa yaz
+    setInputModalVisible(true);
+  };
   // ✅ Seçilen konumu onayla
   const confirmLocation = () => {
     if (selectedWpIndex !== null) {
@@ -121,57 +146,40 @@ export default function CreateTripScreen() {
     ]);
   };
 
-  const updateWaypoint = (index: number, field: string, value: any) => {
-    const updated = [...waypoints];
-    updated[index][field] = value;
-    setWaypoints(updated);
-  };
   const handlePhotoPress = (event: any) => {
     const { locationX, locationY } = event.nativeEvent;
     const xPercent = (locationX / imageLayout.width) * 100;
     const yPercent = (locationY / imageLayout.height) * 100;
 
+    setEditingTagIndex(null); // Yeni etiket eklediğimiz için index'i sıfırlıyoruz
     setTempCoords({ x: xPercent, y: yPercent });
-    setTagName(''); // Kutuyu temizle
-    setInputModalVisible(true); // Yazı yazma modalını aç
-  };
-
-  const deleteTag = (tagIdx: number) => {
-    if (!currentPhoto) return;
-    const { wpIdx, photoIdx } = currentPhoto;
-
-    Alert.alert('Etiketi Sil', 'Bu etiketi kaldırmak istiyor musun?', [
-      { text: 'Vazgeç', style: 'cancel' },
-      {
-        text: 'Sil',
-        style: 'destructive',
-        onPress: () => {
-          const updated = [...waypoints];
-          updated[wpIdx].photos[photoIdx].tags.splice(tagIdx, 1);
-          setWaypoints(updated);
-        },
-      },
-    ]);
+    setTagName('');
+    setInputModalVisible(true);
   };
 
   const saveNewTag = () => {
     if (!tagName || !currentPhoto) return;
-
     const { wpIdx, photoIdx } = currentPhoto;
     const updated = [...waypoints];
 
-    if (!updated[wpIdx].photos[photoIdx].tags) {
-      updated[wpIdx].photos[photoIdx].tags = [];
+    if (editingTagIndex !== null) {
+      // GÜNCELLEME: Mevcut etiketin ismini değiştir
+      updated[wpIdx].photos[photoIdx].tags[editingTagIndex].label = tagName;
+    } else {
+      // EKLEME: Yeni etiket ekle
+      if (!updated[wpIdx].photos[photoIdx].tags) {
+        updated[wpIdx].photos[photoIdx].tags = [];
+      }
+      updated[wpIdx].photos[photoIdx].tags.push({
+        label: tagName,
+        x_pos: tempCoords.x,
+        y_pos: tempCoords.y,
+      });
     }
-
-    updated[wpIdx].photos[photoIdx].tags.push({
-      label: tagName,
-      x_pos: tempCoords.x,
-      y_pos: tempCoords.y,
-    });
 
     setWaypoints(updated);
     setInputModalVisible(false);
+    setEditingTagIndex(null); // Reset
   };
 
   const handlePickImage = async (index: number) => {
@@ -206,6 +214,22 @@ export default function CreateTripScreen() {
     setLoading(true);
 
     try {
+      let finalDate = new Date(); // Varsayılan: Şu an
+
+      if (publishedAt) {
+        // Eğer kullanıcı bir tarih seçtiyse ve bu tarih BUGÜNDEN ÖNCESİYSE
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Sadece gün karşılaştırması için saatleri sıfırla
+
+        if (publishedAt < today) {
+          setLoading(false);
+          return Alert.alert(
+            'Hata',
+            'Geçmişe dönük bir paylaşım tarihi seçemezsiniz.',
+          );
+        }
+        finalDate = publishedAt;
+      }
       const payload = {
         title,
         desc,
@@ -218,7 +242,7 @@ export default function CreateTripScreen() {
             tags: p.tags || [],
           })),
         })),
-        published_at: new Date().toISOString(),
+        published_at: finalDate.toISOString(),
       };
 
       await apiClient.post('/api/v1/trips', payload);
@@ -230,25 +254,7 @@ export default function CreateTripScreen() {
       setLoading(false);
     }
   };
-  const openTaggingModal = (wpIdx: number, photoIdx: number) => {
-    setCurrentPhoto({ wpIdx, photoIdx }); // Hangi resim olduğunu kaydet
-    setTaggingModalVisible(true); // Modalı aç
-  };
-  const addTagToPhoto = (
-    wpIndex: number,
-    photoIndex: number,
-    label: string,
-    x: number,
-    y: number,
-  ) => {
-    const updated = [...waypoints];
-    updated[wpIndex].photos[photoIndex].tags.push({
-      label: label,
-      x_pos: x,
-      y_pos: y,
-    });
-    setWaypoints(updated);
-  };
+
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 bg-white px-6">
@@ -311,6 +317,32 @@ export default function CreateTripScreen() {
               value={isActive}
             />
           </View>
+        </View>
+        <View className="flex-row justify-between items-center mb-4 px-2">
+          <View className="flex-1 mr-4">
+            <Text className="font-bold text-gray-800">Yayın Tarihi</Text>
+            <Text className="text-gray-500 text-xs">
+              {publishedAt.toLocaleDateString('tr-TR')} tarihinde paylaşılacak.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => setShowPicker(true)}
+            className="bg-[#4ECDC4]/10 px-4 py-2 rounded-xl border border-[#4ECDC4]/20"
+          >
+            <Text className="text-[#4ECDC4] font-bold text-xs">TARİH SEÇ</Text>
+          </TouchableOpacity>
+
+          {showPicker && (
+            <DateTimePicker
+              value={publishedAt}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+              // 🛡️ GEÇMİŞ TARİH ENGELİ: minimumDate'i şu an yapıyoruz
+              minimumDate={new Date()}
+            />
+          )}
         </View>
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-xl font-black text-gray-800">Duraklar</Text>
@@ -468,15 +500,15 @@ export default function CreateTripScreen() {
                 ].tags?.map((tag: any, i: number) => {
                   const isRightSide = tag.x_pos > 50;
                   return (
-                    <View
+                    <TouchableOpacity
                       key={i}
+                      onPress={() => handleEditTag(i, tag.label)} // 👈 Tıklayınca düzenleme modunu açar
                       style={{
                         position: 'absolute',
                         left: `${tag.x_pos}%`,
                         top: `${tag.y_pos}%`,
                         transform: [{ translateX: isRightSide ? -80 : -10 }],
-                        maxWidth: 120,
-                        zIndex: 99,
+                        zIndex: 100, // En üstte olduğundan emin olalım
                       }}
                       className="bg-[#4ECDC4] px-3 py-1.5 rounded-full border border-white shadow-lg flex-row items-center"
                     >
@@ -486,7 +518,7 @@ export default function CreateTripScreen() {
                       >
                         {tag.label}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   );
                 })}
               </TouchableOpacity>
@@ -509,29 +541,57 @@ export default function CreateTripScreen() {
         <View className="flex-1 bg-black/80 justify-center px-10">
           <View className="bg-white p-6 rounded-[32px]">
             <Text className="text-lg font-black mb-4 text-gray-800 text-center">
-              Etiket İsmi
+              Etiketi Yönet
             </Text>
+
             <TextInput
               placeholder="Örn: Buranın kahvesi meşhur"
               value={tagName}
               onChangeText={setTagName}
               autoFocus
-              className="bg-gray-100 p-4 rounded-2xl mb-6 font-bold"
+              className="bg-gray-100 p-4 rounded-2xl mb-4 font-bold"
             />
-            <View className="flex-row gap-x-3">
+
+            <View className="flex-row gap-x-2">
+              {/* İPTAL BUTONU */}
               <TouchableOpacity
                 onPress={() => setInputModalVisible(false)}
-                className="flex-1 p-4 rounded-2xl bg-gray-200 items-center"
+                className="flex-1 p-4 rounded-2xl bg-gray-100 items-center"
               >
-                <Text className="font-bold text-gray-500">İptal</Text>
+                <Text className="font-bold text-gray-400">Vazgeç</Text>
               </TouchableOpacity>
+
+              {/* EĞER ETİKET VARSA SİL BUTONU (Opsiyonel: Düzenleme modundaysan göster) */}
               <TouchableOpacity
                 onPress={saveNewTag}
-                className="flex-2 p-4 rounded-2xl bg-[#4ECDC4] items-center px-10"
+                className="flex-2 p-4 rounded-2xl bg-[#4ECDC4] items-center px-6"
               >
-                <Text className="text-white font-bold">EKLE</Text>
+                <Text className="text-white font-bold text-center">KAYDET</Text>
               </TouchableOpacity>
             </View>
+
+            {/* SİLME BUTONU (Daha belirgin olması için alta tam genişlik) */}
+            {editingTagIndex !== null && (
+              <TouchableOpacity
+                onPress={() => {
+                  Alert.alert(
+                    'Emin misin?',
+                    'Bu etiketi silmek istiyor musun?',
+                    [
+                      { text: 'Hayır' },
+                      {
+                        text: 'Evet, Sil',
+                        onPress: deleteTag, // 👈 Artık parametre vermiyoruz, fonksiyon içinden state'i alıyor
+                        style: 'destructive',
+                      },
+                    ],
+                  );
+                }}
+                className="mt-4 p-3 items-center"
+              >
+                <Text className="text-red-500 font-bold">Etiketi Kaldır</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Modal>
