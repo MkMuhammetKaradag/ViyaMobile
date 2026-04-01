@@ -1,5 +1,6 @@
 import { WaypointCardDetail } from '@/components/trip/WaypointCardDetail';
 import { apiClient } from '@/src/api/client';
+import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -18,12 +19,14 @@ const { width } = Dimensions.get('window');
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useUserStore();
   const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTripDetail();
   }, [id]);
+  const isMyTrip = trip?.user_id === user?.id;
 
   const fetchTripDetail = async () => {
     try {
@@ -122,14 +125,49 @@ export default function TripDetailScreen() {
             Yolculuk Durakları
           </Text>
 
-          {trip?.waypoints?.map((wp: any, index: number) => (
+          {/* {trip?.waypoints?.map((wp: any, index: number) => (
             <WaypointCardDetail
               key={wp.id}
               waypoint={wp}
               isLast={index === trip.waypoints.length - 1}
               index={index}
             />
+          ))} */}
+          {trip?.waypoints?.map((wp: any, index: number) => (
+            <WaypointCardDetail
+              key={wp.id}
+              waypoint={wp}
+              isLast={index === trip.waypoints.length - 1 && !isMyTrip} // 👈 Eğer benim gezimse çizgi devam etsin
+              index={index}
+            />
           ))}
+
+          {/* ➕ YENİ DURAK EKLE BUTONU (Sadece gezi sahibine özel) */}
+          {isMyTrip && (
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: '/trip/add-waypoint',
+                  params: {
+                    tripId: id,
+                    nextOrder: trip?.waypoints?.length || 0,
+                  },
+                })
+              }
+              activeOpacity={0.7}
+              className="mt-2 p-6 border-2 border-dashed border-[#4ECDC4]/40 rounded-[32px] bg-[#4ECDC4]/5 items-center justify-center"
+            >
+              <View className="bg-[#4ECDC4] p-3 rounded-full shadow-lg shadow-teal-200">
+                <Ionicons name="add" size={28} color="white" />
+              </View>
+              <Text className="text-[#4ECDC4] font-black mt-3 text-base">
+                YENİ DURAK EKLE
+              </Text>
+              <Text className="text-gray-400 text-[10px] mt-1 font-bold">
+                Macerana kaldığın yerden devam et!
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
 
