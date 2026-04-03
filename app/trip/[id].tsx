@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -38,7 +39,29 @@ export default function TripDetailScreen() {
       setLoading(false);
     }
   };
-
+  const deleteWaypoint = async (waypointId: string) => {
+    Alert.alert(
+      'Durağı Sil',
+      'Bu durağı ve içindeki tüm fotoğrafları silmek istediğine emin misin?',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Sil',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiClient.delete(`/api/v1/waypoints/${waypointId}`);
+              // Listeyi yenile
+              fetchTripDetail();
+            } catch (err) {
+              console.error('Silme hatası:', err);
+              Alert.alert('Hata', 'Durak silinemedi.');
+            }
+          },
+        },
+      ],
+    );
+  };
   if (loading) return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
 
   return (
@@ -134,12 +157,23 @@ export default function TripDetailScreen() {
             />
           ))} */}
           {trip?.waypoints?.map((wp: any, index: number) => (
-            <WaypointCardDetail
-              key={wp.id}
-              waypoint={wp}
-              isLast={index === trip.waypoints.length - 1 && !isMyTrip} // 👈 Eğer benim gezimse çizgi devam etsin
-              index={index}
-            />
+            <View key={wp.id} className="relative">
+              <WaypointCardDetail
+                waypoint={wp}
+                isLast={index === trip.waypoints.length - 1 && !isMyTrip}
+                index={index}
+              />
+
+              {/* 🗑️ SİLME BUTONU (Sadece sahibi görebilir) */}
+              {isMyTrip && (
+                <TouchableOpacity
+                  onPress={() => deleteWaypoint(wp.id)}
+                  className="absolute top-0 right-0 p-2 bg-red-50 rounded-full"
+                >
+                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                </TouchableOpacity>
+              )}
+            </View>
           ))}
 
           {/* ➕ YENİ DURAK EKLE BUTONU (Sadece gezi sahibine özel) */}
