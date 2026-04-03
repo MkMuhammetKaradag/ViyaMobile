@@ -62,6 +62,28 @@ export default function TripDetailScreen() {
       ],
     );
   };
+  const reorderWaypoint = async (
+    waypointId: string,
+    currentIndex: number,
+    direction: 'up' | 'down',
+  ) => {
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    // Sınır kontrolü (Aslında butonları gizleyerek bunu engelledik ama garanti olsun)
+    if (newIndex < 0 || newIndex >= (trip?.waypoints?.length || 0)) return;
+
+    try {
+      // PATCH isteği: Backend sadece { "index": number } bekliyor
+      await apiClient.patch(`/api/v1/waypoints/${waypointId}/reorder`, {
+        index: newIndex,
+      });
+
+      // İşlem başarılıysa listeyi tekrar çek
+      fetchTripDetail();
+    } catch (err) {
+      console.error('Sıralama güncellenirken hata oluştu:', err);
+    }
+  };
   if (loading) return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
 
   return (
@@ -164,14 +186,37 @@ export default function TripDetailScreen() {
                 index={index}
               />
 
-              {/* 🗑️ SİLME BUTONU (Sadece sahibi görebilir) */}
+              {/* 🛠️ DURAK YÖNETİM PANELİ (Sadece sahip görebilir) */}
               {isMyTrip && (
-                <TouchableOpacity
-                  onPress={() => deleteWaypoint(wp.id)}
-                  className="absolute top-0 right-0 p-2 bg-red-50 rounded-full"
-                >
-                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                </TouchableOpacity>
+                <View className="absolute top-0 right-0 flex-row items-center space-x-2">
+                  {/* ⬆️ YUKARI TAŞI (İlk durak değilse göster) */}
+                  {index > 0 && (
+                    <TouchableOpacity
+                      onPress={() => reorderWaypoint(wp.id, index, 'up')}
+                      className="p-2 bg-gray-50 rounded-full border border-gray-100"
+                    >
+                      <Ionicons name="chevron-up" size={18} color="#4ECDC4" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* ⬇️ AŞAĞI TAŞI (Son durak değilse göster) */}
+                  {index < trip.waypoints.length - 1 && (
+                    <TouchableOpacity
+                      onPress={() => reorderWaypoint(wp.id, index, 'down')}
+                      className="p-2 bg-gray-50 rounded-full border border-gray-100"
+                    >
+                      <Ionicons name="chevron-down" size={18} color="#4ECDC4" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* 🗑️ SİLME BUTONU */}
+                  <TouchableOpacity
+                    onPress={() => deleteWaypoint(wp.id)}
+                    className="p-2 bg-red-50 rounded-full border border-red-100"
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
               )}
             </View>
           ))}
