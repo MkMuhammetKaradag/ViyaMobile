@@ -2,8 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import {
+  Alert,
   Dimensions,
+  Linking,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -75,6 +78,41 @@ const ModalTag = ({ tag }: { tag: any }) => {
   );
 };
 export const WaypointCardDetail = ({ waypoint, isLast, index }: any) => {
+  const openInMaps = (lat: number, lng: number, label: string) => {
+    if (!lat || !lng) {
+      Alert.alert('Hata', 'Bu durağın konum bilgisi bulunamadı.');
+      return;
+    }
+
+    const scheme = Platform.select({
+      ios: 'maps:0,0?q=',
+      android: 'geo:0,0?q=',
+    });
+    const latLng = `${lat},${lng}`;
+    const url = Platform.select({
+      ios: `${scheme}${label}@${latLng}`,
+      android: `${scheme}${latLng}(${label})`,
+    });
+
+    // Google Maps özel URL'i (Eğer yüklüyse doğrudan orada açar)
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+    Alert.alert(
+      'Yol Tarifi',
+      'Hangi harita uygulamasını kullanmak istersiniz?',
+      [
+        {
+          text: 'Cihaz Haritası',
+          onPress: () => Linking.openURL(url!),
+        },
+        {
+          text: 'Google Maps',
+          onPress: () => Linking.openURL(googleMapsUrl),
+        },
+        { text: 'Vazgeç', style: 'cancel' },
+      ],
+    );
+  };
   return (
     <View className="flex-row">
       {/* Sol Çizelge (Timeline Line) */}
@@ -148,7 +186,16 @@ export const WaypointCardDetail = ({ waypoint, isLast, index }: any) => {
 
           {/* Aksiyon Butonları */}
           <View className="flex-row justify-between items-center">
-            <TouchableOpacity className="flex-row items-center bg-gray-50 px-4 py-2 rounded-full">
+            <TouchableOpacity
+              onPress={() =>
+                openInMaps(
+                  waypoint.latitude,
+                  waypoint.longitude,
+                  waypoint.title,
+                )
+              }
+              className="flex-row items-center bg-gray-50 px-4 py-2 rounded-full"
+            >
               <Ionicons name="location" size={14} color="#4ECDC4" />
               <Text className="text-[#4ECDC4] text-[11px] font-bold ml-1">
                 Haritada Aç
