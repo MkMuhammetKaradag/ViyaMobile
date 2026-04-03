@@ -1,3 +1,4 @@
+import { WaypointDraft } from '@/src/hooks/useCreateTrip';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -12,7 +13,7 @@ import {
 interface WaypointCardProps {
   index: number;
   waypoint: any;
-  onUpdate: (field: string, value: any) => void;
+  onUpdate: (field: keyof WaypointDraft, val: any) => void;
   onRemove: () => void;
   onPickImage: () => void;
   onRemoveImage: (imageIndex: number) => void;
