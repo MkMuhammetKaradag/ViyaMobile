@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       <ImageBackground
         source={MapBG}
         resizeMode="cover"
-        imageStyle={{ height: '30%' }}
+        imageStyle={{ height: '30%', opacity: 0.4 }}
         imageClassName="opacity-40 absolute top-0"
         className="flex-1"
       >
