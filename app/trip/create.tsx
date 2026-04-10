@@ -1,4 +1,5 @@
 import { MapPickerModal } from '@/components/trip/MapPickerModal';
+import { MultiCategoryPicker } from '@/components/trip/MultiCategoryPicker';
 import { PhotoTagModal } from '@/components/trip/PhotoTagModal';
 import { TripFormHeader } from '@/components/trip/TripFormHeader';
 import { TripSettingsCard } from '@/components/trip/TripSettingsCard';
@@ -9,6 +10,8 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -65,8 +68,15 @@ export default function CreateTripScreen() {
     : null;
 
   return (
-    <View className="flex-1 bg-white">
-      <ScrollView className="flex-1 bg-white px-6">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-white"
+    >
+      <ScrollView
+        className="flex-1 bg-white px-6"
+        keyboardShouldPersistTaps="handled" // Liste seçimini engellemez
+        showsVerticalScrollIndicator={false}
+      >
         {/* Üst başlık */}
         <View className="mt-14 mb-8 flex-row justify-between items-center">
           <Text className="text-3xl font-black text-gray-900">Yeni Rota</Text>
@@ -82,7 +92,12 @@ export default function CreateTripScreen() {
           onTitleChange={trip.setTitle}
           onDescChange={trip.setDesc}
         />
-
+        <MultiCategoryPicker
+          label="Rota Kategorileri"
+          selectedCategories={trip.categories}
+          onAdd={trip.addCategory}
+          onRemove={trip.removeCategory}
+        />
         {/* Ayarlar (switch'ler + tarih) */}
         <TripSettingsCard
           isPublic={trip.isPublic}
@@ -170,6 +185,6 @@ export default function CreateTripScreen() {
           }
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }

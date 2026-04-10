@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { CategorySearchPicker } from './CategorySearchPicker';
 
 interface WaypointCardProps {
   index: number;
@@ -85,6 +86,11 @@ export const WaypointCard = ({
         multiline
         className="bg-white p-4 rounded-2xl mb-4 border border-gray-100 text-sm text-gray-600 min-h-[60px]"
         textAlignVertical="top"
+      />
+      <CategorySearchPicker
+        label="Bu Durağın Kategorisi"
+        selectedCategory={waypoint.category} // waypoint objesinde artık {id, name} var
+        onSelect={(cat) => onUpdate('category', cat)}
       />
 
       {/* Resim Galerisi */}

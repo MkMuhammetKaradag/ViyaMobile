@@ -12,11 +12,16 @@ export type WaypointDraft = {
   latitude: number;
   longitude: number;
   order_index: number;
+  category: Category; // Backend'e sadece ID'leri gönderiyoruz
 };
 
 export type PhotoDraft = {
   url: string;
   tags: TagDraft[];
+};
+export type Category = {
+  id: string;
+  name: string;
 };
 
 export type TagDraft = {
@@ -38,7 +43,10 @@ export function useCreateTrip() {
   const [publishedAt, setPublishedAt] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [waypoints, setWaypoints] = useState<WaypointDraft[]>([]);
+  const [category, setCategory] = useState<Category | null>(null);
 
+  // Yeniye:
+  const [categories, setCategories] = useState<Category[]>([]);
   const onDateChange = useCallback((_event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') setShowPicker(false);
     if (selectedDate) setPublishedAt(selectedDate);
@@ -54,6 +62,10 @@ export function useCreateTrip() {
         latitude: 0,
         longitude: 0,
         order_index: prev.length,
+        category: {
+          id: '',
+          name: '',
+        },
       },
     ]);
   }, []);
@@ -160,6 +172,15 @@ export function useCreateTrip() {
     },
     [],
   );
+  const addCategory = (cat: Category) => {
+    setCategories((prev) =>
+      prev.find((c) => c.id === cat.id) ? prev : [...prev, cat],
+    );
+  };
+
+  const removeCategory = (catId: string) => {
+    setCategories((prev) => prev.filter((c) => c.id !== catId));
+  };
 
   const handleSave = useCallback(async () => {
     if (title.length < 3) {
@@ -186,8 +207,10 @@ export function useCreateTrip() {
         waypoints: waypoints.map((wp) => ({
           ...wp,
           photos: wp.photos.map((p) => ({ url: p.url, tags: p.tags || [] })),
+          category_id: wp.category.id,
         })),
         published_at: publishedAt.toISOString(),
+        category_ids: categories.map((c) => c.id),
       };
 
       await apiClient.post('/api/v1/trips', payload);
@@ -216,7 +239,14 @@ export function useCreateTrip() {
     waypoints,
     loading,
     uploadingIndex,
+    category,
+    setCategory,
+    categories,
+    setCategories,
+
     // Actions
+    addCategory,
+    removeCategory,
     onDateChange,
     addWaypoint,
     removeWaypoint,
