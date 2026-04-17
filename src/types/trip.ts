@@ -21,3 +21,16 @@ export interface Waypoint {
   note?: string;
   photos: string[];
 }
+export interface TripExploreDTO {
+  id: string;
+  user_id: string;
+  title: string;
+  display_image: string | null; // Go'daki *string karşılığı
+  total_likes: number;
+  total_comments: number;
+  view_count: number;
+  waypoint_count: number;
+  owner_username: string;
+  owner_avatar: string | null;
+  published_at: string; // ISO formatında gelecek
+}

@@ -25,6 +25,20 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* 🧭 KEŞFET (ANA SAYFA) */}
+      <Tabs.Screen
+        name="explore/index"
+        options={{
+          title: '',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'compass' : 'compass-outline'}
+              size={28}
+              color={color}
+            />
+          ),
+        }}
+      />
 
       <Tabs.Screen
         name="create-trip-handler" // Gerçek bir dosya olmasına gerek yok
