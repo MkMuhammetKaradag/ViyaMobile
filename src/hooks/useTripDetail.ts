@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
 export function useTripDetail() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useUserStore();
   const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -14,37 +14,7 @@ export function useTripDetail() {
     () => !!trip && trip.user_id === user?.id,
     [trip, user?.id],
   );
-  const toggleLike = async () => {
-    if (!trip) return;
 
-    
-    const previousIsLiked = trip.is_liked;
-    const previousLikeCount = trip.like_count ?? 0;
-
-    setTrip({
-      ...trip,
-      is_liked: !previousIsLiked,
-      like_count: previousIsLiked
-        ? previousLikeCount - 1
-        : previousLikeCount + 1,
-    });
-
-    try {
-      
-      const res = await apiClient.patch(`/api/v1/trips/${id}/like`);
-
-    
-    } catch (error) {
-    
-      setTrip({
-        ...trip,
-        is_liked: previousIsLiked,
-        like_count: previousLikeCount,
-      });
-      console.error('Beğeni işlemi başarısız:', error);
-      Alert.alert('Hata', 'Beğeni işlemi gerçekleştirilemedi.');
-    }
-  };
   const fetchTripDetail = useCallback(async () => {
     try {
       const res = await apiClient.get(`/api/v1/trips/${id}`);
@@ -59,6 +29,38 @@ export function useTripDetail() {
   useEffect(() => {
     fetchTripDetail();
   }, [fetchTripDetail]);
+
+  // ✅ useCallback eklendi, setTrip(prev => ...) ile stale closure önlendi
+  const toggleLike = useCallback(async () => {
+    setTrip((prev: any) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        is_liked: !prev.is_liked,
+        like_count: prev.is_liked
+          ? (prev.like_count ?? 0) - 1
+          : (prev.like_count ?? 0) + 1,
+      };
+    });
+
+    try {
+      await apiClient.patch(`/api/v1/trips/${id}/like`);
+    } catch (error) {
+      // ✅ Hata durumunda da prev üzerinden geri al
+      setTrip((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          is_liked: !prev.is_liked,
+          like_count: prev.is_liked
+            ? (prev.like_count ?? 0) - 1
+            : (prev.like_count ?? 0) + 1,
+        };
+      });
+      console.error('Beğeni işlemi başarısız:', error);
+      Alert.alert('Hata', 'Beğeni işlemi gerçekleştirilemedi.');
+    }
+  }, [id]);
 
   const deleteWaypoint = useCallback(
     (waypointId: string) => {
@@ -93,7 +95,6 @@ export function useTripDetail() {
       direction: 'up' | 'down',
     ) => {
       const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
-
       if (newIndex < 0 || newIndex >= (trip?.waypoints?.length || 0)) return;
 
       try {
