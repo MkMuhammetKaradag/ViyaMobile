@@ -14,7 +14,37 @@ export function useTripDetail() {
     () => !!trip && trip.user_id === user?.id,
     [trip, user?.id],
   );
+  const toggleLike = async () => {
+    if (!trip) return;
 
+    
+    const previousIsLiked = trip.is_liked;
+    const previousLikeCount = trip.like_count ?? 0;
+
+    setTrip({
+      ...trip,
+      is_liked: !previousIsLiked,
+      like_count: previousIsLiked
+        ? previousLikeCount - 1
+        : previousLikeCount + 1,
+    });
+
+    try {
+      
+      const res = await apiClient.patch(`/api/v1/trips/${id}/like`);
+
+    
+    } catch (error) {
+    
+      setTrip({
+        ...trip,
+        is_liked: previousIsLiked,
+        like_count: previousLikeCount,
+      });
+      console.error('Beğeni işlemi başarısız:', error);
+      Alert.alert('Hata', 'Beğeni işlemi gerçekleştirilemedi.');
+    }
+  };
   const fetchTripDetail = useCallback(async () => {
     try {
       const res = await apiClient.get(`/api/v1/trips/${id}`);
@@ -82,6 +112,7 @@ export function useTripDetail() {
     trip,
     loading,
     isMyTrip,
+    toggleLike,
     deleteWaypoint,
     reorderWaypoint,
     refetch: fetchTripDetail,

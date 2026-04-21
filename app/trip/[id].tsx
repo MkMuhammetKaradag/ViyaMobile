@@ -8,8 +8,14 @@ import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams();
-  const { trip, loading, isMyTrip, deleteWaypoint, reorderWaypoint } =
-    useTripDetail();
+  const {
+    trip,
+    loading,
+    isMyTrip,
+    deleteWaypoint,
+    reorderWaypoint,
+    toggleLike,
+  } = useTripDetail();
 
   if (loading) {
     return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
@@ -34,10 +40,13 @@ export default function TripDetailScreen() {
         />
 
         {/* Etkileşim barı */}
+
         <TripInteractionBar
           viewCount={trip.view_count}
           likeCount={trip.like_count}
           commentCount={trip.comment_count}
+          isLiked={trip.is_liked}
+          onLikePress={toggleLike}
         />
 
         {/* Açıklama */}
