@@ -4,8 +4,8 @@ import { useLikedTrips } from '@/src/hooks/useLikedTrips';
 import { useUserTrips } from '@/src/hooks/useUserTrips';
 import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -43,7 +43,6 @@ export default function ProfileScreen() {
   const myTripsHook = useUserTrips();
   const likedTripsHook = useLikedTrips();
 
-
   const gridOpacity = useSharedValue(1);
   const indicatorLeft = useSharedValue(0);
 
@@ -54,16 +53,23 @@ export default function ProfileScreen() {
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
     left: indicatorLeft.value,
   }));
-
+  useFocusEffect(
+    useCallback(() => {
+      // Sadece o an aktif olan sekmeyi tazelemek performansı korur
+      if (activeTab === 'likedTrips') {
+        likedTripsHook.onRefresh();
+      } else {
+        myTripsHook.onRefresh();
+      }
+    }, [activeTab]), // activeTab değiştiğinde veya sayfaya dönüldüğünde tetiklenir
+  );
   const handleTabChange = (tab: TabType) => {
     if (tab === activeTab) return;
 
-    
     indicatorLeft.value = withTiming(tab === 'myTrips' ? 0 : width / 2, {
       duration: 200,
     });
 
-    
     gridOpacity.value = withTiming(0, { duration: 100 }, () => {
       runOnJS(setActiveTab)(tab);
       gridOpacity.value = withTiming(1, { duration: 180 });
@@ -82,10 +88,8 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-white">
-    
       <ProfileHeader user={user} />
 
-     
       <View className="flex-row border-b border-gray-100 relative bg-white">
         <TouchableOpacity
           onPress={() => handleTabChange('myTrips')}
@@ -111,7 +115,6 @@ export default function ProfileScreen() {
           />
         </TouchableOpacity>
 
-        
         <Animated.View
           style={[
             {
@@ -126,7 +129,6 @@ export default function ProfileScreen() {
         />
       </View>
 
-    
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={

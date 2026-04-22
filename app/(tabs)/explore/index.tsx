@@ -6,7 +6,8 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  TextInput,
+  Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -35,15 +36,19 @@ export default function ExploreScreen() {
             tintColor="#4ECDC4"
           />
         }
+        // LİSTE BAŞLIĞI: Burası artık sadece bir buton!
         ListHeaderComponent={
-          <View className="px-3 py-4 pt-12">
-            <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2">
-              <Ionicons name="search" size={18} color="#94a3b8" />
-              <TextInput
-                placeholder="Ara"
-                className="flex-1 ml-2 text-base py-1"
-              />
-            </View>
+          <View className="px-3 py-4 pt-14">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push('/search')} // Dokunulduğu an yeni sayfaya uçurur
+              className="flex-row items-center bg-gray-100 rounded-xl px-3 py-3 border border-gray-200"
+            >
+              <Ionicons name="search" size={20} color="#94a3b8" />
+              <Text className="ml-2 text-base text-gray-400">
+                Kullanıcı veya gezi ara...
+              </Text>
+            </TouchableOpacity>
           </View>
         }
         ListFooterComponent={() =>
