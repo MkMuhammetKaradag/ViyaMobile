@@ -1,4 +1,5 @@
 import '@/global.css';
+import { useUserStore } from '@/src/store/useUserStore';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
@@ -10,21 +11,41 @@ export default function RootLayout() {
   const [hasSession, setHasSession] = useState<string | null>(null);
   const segments = useSegments();
   const router = useRouter();
-
+  const { fetchUser, user } = useUserStore();
   // 1. Session Kontrolü
+  // useEffect(() => {
+  //   const checkSession = async () => {
+  //     try {
+  //       const session = await SecureStore.getItemAsync('hasSession');
+  //       setHasSession(session);
+  //     } catch (e) {
+  //       console.error('Session okuma hatası:', e);
+  //     } finally {
+  //       setIsReady(true);
+  //     }
+  //   };
+  //   checkSession();
+  // }, [segments]);
+
   useEffect(() => {
-    const checkSession = async () => {
+    const initialize = async () => {
       try {
         const session = await SecureStore.getItemAsync('hasSession');
         setHasSession(session);
+
+        // Session varsa ve store'da henüz user yoksa çek
+        if (session && !user) {
+          await fetchUser();
+        }
       } catch (e) {
-        console.error('Session okuma hatası:', e);
+        console.error('Başlatma hatası:', e);
       } finally {
         setIsReady(true);
       }
     };
-    checkSession();
-  }, [segments]);
+
+    initialize();
+  }, [segments]); // segments kalsın, yönlendirme için şart
 
   // 2. Yönlendirme Koruması
   useEffect(() => {

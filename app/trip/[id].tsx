@@ -1,13 +1,18 @@
+import { CommentSection } from '@/components/trip/comments/CommentSection';
 import { TripCoverHeader } from '@/components/trip/TripCoverHeader';
 import { TripInteractionBar } from '@/components/trip/TripInteractionBar';
 import { WaypointList } from '@/components/trip/WaypointList';
+import { useComments } from '@/src/hooks/useComments';
 import { useTripDetail } from '@/src/hooks/useTripDetail';
+import { useUserStore } from '@/src/store/useUserStore';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 export default function TripDetailScreen() {
+  const [isCommentModalVisible, setCommentModalVisible] = React.useState(false);
   const { id } = useLocalSearchParams();
+  const currentUser = useUserStore.getState().user;
   const {
     trip,
     loading,
@@ -17,6 +22,9 @@ export default function TripDetailScreen() {
     toggleLike,
   } = useTripDetail();
 
+  console.log('TripDetailScreen render oldu. Trip:', currentUser);
+
+  const { comments, addComment, loadMore } = useComments(id as string);
   if (loading) {
     return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
   }
@@ -47,6 +55,7 @@ export default function TripDetailScreen() {
           commentCount={trip.comment_count}
           isLiked={trip.is_liked}
           onLikePress={toggleLike}
+          onCommentPress={() => setCommentModalVisible(true)}
         />
 
         {/* Açıklama */}
@@ -65,6 +74,14 @@ export default function TripDetailScreen() {
           onReorder={reorderWaypoint}
         />
       </ScrollView>
+      <CommentSection
+        isVisible={isCommentModalVisible}
+        onClose={() => setCommentModalVisible(false)}
+        tripId={id as string}
+        comments={comments}
+        onSendComment={addComment}
+        onLoadMore={loadMore}
+      />
     </View>
   );
 }

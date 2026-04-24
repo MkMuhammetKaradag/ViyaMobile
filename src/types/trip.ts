@@ -34,3 +34,18 @@ export interface TripExploreDTO {
   owner_avatar: string | null;
   published_at: string; // ISO formatında gelecek
 }
+export interface TripDetailDTO {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  display_image: string | null;
+  is_public: boolean;
+  total_likes: number;
+  total_comments: number;
+  view_count: number;
+  waypoints: Waypoint[];
+  owner_username: string;
+  owner_avatar: string | null;
+  published_at: string;
+}

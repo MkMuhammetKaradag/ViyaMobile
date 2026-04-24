@@ -8,6 +8,7 @@ type Props = {
   commentCount?: number;
   isLiked?: boolean;
   onLikePress?: () => void;
+  onCommentPress?: () => void;
 };
 
 export function TripInteractionBar({
@@ -16,6 +17,7 @@ export function TripInteractionBar({
   commentCount = 0,
   isLiked = false,
   onLikePress,
+  onCommentPress,
 }: Props) {
   console.log(
     'TripInteractionBar render oldu. isLiked:',
@@ -47,9 +49,7 @@ export function TripInteractionBar({
         {/* Yorum */}
         <TouchableOpacity
           className="flex-row items-center"
-          onPress={() =>
-            Alert.alert('Yakında', 'Yorum sistemi aktif edilecek.')
-          }
+          onPress={onCommentPress}
         >
           <Ionicons name="chatbubble-outline" size={24} color="#374151" />
           <Text className="ml-2 font-bold text-gray-700">{commentCount}</Text>

@@ -53,6 +53,7 @@ export default function ProfileScreen() {
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
     left: indicatorLeft.value,
   }));
+  console.log('ProfileScreen render oldu. User:', user);
   useFocusEffect(
     useCallback(() => {
       // Sadece o an aktif olan sekmeyi tazelemek performansı korur
