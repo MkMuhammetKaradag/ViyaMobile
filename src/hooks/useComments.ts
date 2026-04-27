@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { apiClient } from '../api/client';
 import { useUserStore } from '../store/useUserStore';
 import { TripComment } from '../types/comment';
@@ -65,11 +66,12 @@ export function useComments(tripId: string) {
         created_at: new Date().toISOString(),
       };
 
-      if (newComment) {
+      if (!parentId) {
         setComments((prev) => [newComment, ...prev]);
         // Yeni yorumu listenin en başına koyduk.
       } else {
         // Eğer backend sadece ID dönüyorsa, listeyi baştan çekebilirsin:
+        DeviceEventEmitter.emit(`NEW_REPLY_${parentId}`, newComment);
         fetchComments();
       }
 

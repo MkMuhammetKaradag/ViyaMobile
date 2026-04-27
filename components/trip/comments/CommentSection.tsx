@@ -35,14 +35,16 @@ export function CommentSection({
 }: Props) {
   const [commentText, setCommentText] = useState('');
   const [isSending, setIsSending] = useState(false); // Gönderiliyor durumu için
+  const [replyTo, setReplyTo] = useState<TripComment | null>(null);
   //   const currentUser = useUserStore.getState().user;
   const handlePost = async () => {
     if (!commentText.trim()) return;
 
     setIsSending(true);
     try {
-      await onSendComment(commentText);
+      await onSendComment(commentText, replyTo?.id);
       setCommentText(''); // Başarılıysa inputu temizle
+      setReplyTo(null); // Yanıtı sıfırla
     } catch (error: any) {
       Alert.alert('Hata', error.message);
     } finally {
@@ -69,7 +71,7 @@ export function CommentSection({
         <FlatList
           data={comments}
           renderItem={({ item }) => (
-            <CommentItem comment={item} onReplyPress={(c) => console.log(c)} />
+            <CommentItem comment={item} onReplyPress={(c) => setReplyTo(c)} />
           )}
           keyExtractor={(item, index) =>
             item?.id?.toString() || index.toString()
@@ -77,7 +79,17 @@ export function CommentSection({
           onEndReached={onLoadMore} // Buraya ekledik
           onEndReachedThreshold={0.5}
         />
-
+        {replyTo && (
+          <View className="flex-row justify-between items-center px-4 py-2 bg-gray-50 border-t border-gray-200">
+            <Text className="text-xs text-gray-500">
+              <Text className="font-bold">@{replyTo.username}</Text>{' '}
+              kullanıcısına yanıt veriliyor
+            </Text>
+            <TouchableOpacity onPress={() => setReplyTo(null)}>
+              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+        )}
         {/* Giriş Alanı */}
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
