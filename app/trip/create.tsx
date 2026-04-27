@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -74,8 +75,7 @@ export default function CreateTripScreen() {
     >
       <ScrollView
         className="flex-1 bg-white px-6"
-        keyboardShouldPersistTaps="handled" // Liste seçimini engellemez
-        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Üst başlık */}
         <View className="mt-14 mb-8 flex-row justify-between items-center">
@@ -84,7 +84,49 @@ export default function CreateTripScreen() {
             <Ionicons name="close" size={30} />
           </TouchableOpacity>
         </View>
+        <View className="mb-6">
+          <Text className="text-gray-400 text-[10px] font-bold uppercase mb-2 ml-1">
+            Rota Kapak Fotoğrafı
+          </Text>
 
+          {trip.coverImageUrl ? (
+            <View className="relative">
+              <Image
+                source={{ uri: trip.coverImageUrl }}
+                className="w-full h-48 rounded-[32px] border border-gray-200"
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                onPress={trip.removeCoverImage} // Hook'tan gelen silme fonksiyonu
+                className="absolute top-3 right-3 bg-red-500 p-2 rounded-full shadow-lg"
+              >
+                <Ionicons name="trash" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={trip.pickCoverImage} // Hook'tan gelen seçme fonksiyonu
+              disabled={trip.isCoverUploading}
+              className="w-full h-48 bg-gray-50 rounded-[32px] items-center justify-center border-2 border-dashed border-gray-200"
+            >
+              {trip.isCoverUploading ? (
+                <ActivityIndicator color="#4ECDC4" />
+              ) : (
+                <View className="items-center">
+                  <View className="bg-white p-4 rounded-full shadow-sm mb-2">
+                    <Ionicons name="image" size={32} color="#4ECDC4" />
+                  </View>
+                  <Text className="text-gray-500 font-bold">
+                    Kapak Fotoğrafı Ekle
+                  </Text>
+                  <Text className="text-gray-400 text-xs mt-1">
+                    Gezginlerin ilgisini çek!
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
         {/* Form alanları */}
         <TripFormHeader
           title={trip.title}

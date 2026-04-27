@@ -43,6 +43,8 @@ export function useCreateTrip() {
   const [publishedAt, setPublishedAt] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [waypoints, setWaypoints] = useState<WaypointDraft[]>([]);
+  const [coverImageUrl, setCoverImageUrl] = useState<string>('');
+  const [isCoverUploading, setIsCoverUploading] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
 
   // Yeniye:
@@ -119,7 +121,29 @@ export function useCreateTrip() {
     },
     [],
   );
+  const pickCoverImage = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
 
+    if (!result.canceled) {
+      setIsCoverUploading(true);
+      try {
+        const url = await uploadToCloudinary(result.assets[0].uri);
+        setCoverImageUrl(url);
+      } catch (error) {
+        Alert.alert('Hata', 'Kapak resmi yüklenemedi.');
+      } finally {
+        setIsCoverUploading(false);
+      }
+    }
+  }, []);
+
+  const removeCoverImage = () => {
+    setCoverImageUrl('');
+  };
   const updateWaypointLocation = useCallback(
     (waypointIndex: number, latitude: number, longitude: number) => {
       setWaypoints((prev) => {
@@ -207,10 +231,11 @@ export function useCreateTrip() {
         waypoints: waypoints.map((wp) => ({
           ...wp,
           photos: wp.photos.map((p) => ({ url: p.url, tags: p.tags || [] })),
-          category_id: wp.category.id,
+          category_id: wp.category.id || undefined,
         })),
         published_at: publishedAt.toISOString(),
         category_ids: categories.map((c) => c.id),
+        cover_image_url: coverImageUrl,
       };
 
       await apiClient.post('/api/v1/trips', payload);
@@ -221,7 +246,17 @@ export function useCreateTrip() {
     } finally {
       setLoading(false);
     }
-  }, [title, desc, isActive, isPublic, waypoints, publishedAt, router]);
+  }, [
+    title,
+    desc,
+    isActive,
+    isPublic,
+    waypoints,
+    publishedAt,
+    router,
+    categories,
+    coverImageUrl,
+  ]);
 
   return {
     // State
@@ -243,6 +278,8 @@ export function useCreateTrip() {
     setCategory,
     categories,
     setCategories,
+    coverImageUrl,
+    isCoverUploading,
 
     // Actions
     addCategory,
@@ -258,5 +295,8 @@ export function useCreateTrip() {
     updateTag,
     deleteTag,
     handleSave,
+
+    pickCoverImage,
+    removeCoverImage,
   };
 }
