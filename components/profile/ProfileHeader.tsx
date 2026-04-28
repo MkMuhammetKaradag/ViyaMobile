@@ -7,9 +7,13 @@ import { UserProfile } from '../../src/types/user'; // Tipini doğru yerden impo
 // Bileşenin hangi verileri alacağını tanımlıyoruz
 interface ProfileHeaderProps {
   user: UserProfile | null;
+  isOtherUser?: boolean;
 }
 
-export default function ProfileHeader({ user }: ProfileHeaderProps) {
+export default function ProfileHeader({
+  user,
+  isOtherUser = false,
+}: ProfileHeaderProps) {
   const router = useRouter();
 
   return (
@@ -34,12 +38,14 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
         )}
 
         {/* Düzenle Butonu */}
-        <TouchableOpacity
-          onPress={() => router.push('/(tabs)/profile/profile_edit')}
-          className="absolute right-4 top-12 bg-black/30 p-2 rounded-full backdrop-blur-md"
-        >
-          <Ionicons name="settings-outline" size={20} color="white" />
-        </TouchableOpacity>
+        {!isOtherUser && (
+          <TouchableOpacity
+            onPress={() => router.push('/(tabs)/profile/profile_edit')}
+            className="absolute right-4 top-12 bg-black/30 p-2 rounded-full backdrop-blur-md"
+          >
+            <Ionicons name="settings-outline" size={20} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Profil Fotoğrafı ve Bilgiler */}
