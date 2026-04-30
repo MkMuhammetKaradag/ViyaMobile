@@ -16,7 +16,7 @@ export default function ExploreScreen() {
   const { trips, loading, refreshing, onRefresh, loadMore } = useExplore();
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-red">
       <FlatList
         data={trips}
         numColumns={3}
@@ -38,7 +38,7 @@ export default function ExploreScreen() {
         }
         // LİSTE BAŞLIĞI: Burası artık sadece bir buton!
         ListHeaderComponent={
-          <View className="px-3 py-4 pt-14">
+          <View className="px-3 py-4 ">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => router.push('/search')} // Dokunulduğu an yeni sayfaya uçurur

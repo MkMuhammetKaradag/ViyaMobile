@@ -37,7 +37,7 @@ export default function HomeScreen() {
     }
   };
   return (
-    <View className="flex-1 justify-center items-center bg-gray-50 px-6">
+    <View className="flex-1 justify-center items-center bg-gray-300 px-6">
       {/* Başlık Bölümü */}
       <View className="items-center mb-12">
         <Text className="text-3xl font-black text-gray-800 tracking-tight">

@@ -3,7 +3,7 @@ import { useUserStore } from '@/src/store/useUserStore';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 // LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 export default function RootLayout() {
@@ -62,6 +62,12 @@ export default function RootLayout() {
     }
   }, [hasSession, isReady, segments]);
 
+  const colorScheme = useColorScheme();
+
+  // 2. Temaya göre renkleri belirliyoruz
+  const isDark = colorScheme === 'dark';
+  const themeColor = isDark ? '#000000' : '#FFFFFF';
+  const statusBarStyle = isDark ? 'light-content' : 'dark-content';
   if (!isReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
