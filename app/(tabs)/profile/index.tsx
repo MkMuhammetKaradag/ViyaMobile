@@ -88,10 +88,27 @@ export default function ProfileScreen() {
   const currentHook = activeTab === 'myTrips' ? myTripsHook : likedTripsHook;
 
   return (
-    <View className="flex-1 bg-white">
+    <ScrollView
+      className="flex-1"
+      showsVerticalScrollIndicator={false}
+      stickyHeaderIndices={[1]}
+      refreshControl={
+        <RefreshControl
+          refreshing={currentHook.refreshing}
+          onRefresh={currentHook.onRefresh}
+          tintColor="#4ECDC4"
+        />
+      }
+      onScroll={({ nativeEvent }) => {
+        if (currentHook.isCloseToBottom(nativeEvent)) {
+          currentHook.loadMore();
+        }
+      }}
+      scrollEventThrottle={100}
+    >
       <ProfileHeader user={user} />
 
-      <View className="flex-row border-b border-gray-100 relative bg-white">
+      <View className="flex-row border-b border-gray-100  bg-white">
         <TouchableOpacity
           onPress={() => handleTabChange('myTrips')}
           activeOpacity={0.6}
@@ -130,100 +147,83 @@ export default function ProfileScreen() {
         />
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={currentHook.refreshing}
-            onRefresh={currentHook.onRefresh}
-            tintColor="#4ECDC4"
-          />
-        }
-        onScroll={({ nativeEvent }) => {
-          if (currentHook.isCloseToBottom(nativeEvent)) {
-            currentHook.loadMore();
-          }
-        }}
-        scrollEventThrottle={100}
-      >
-        <Animated.View style={gridAnimatedStyle}>
-          {(['myTrips', 'likedTrips'] as TabType[]).map((tab) => {
-            const hook = tab === 'myTrips' ? myTripsHook : likedTripsHook;
+      <Animated.View style={gridAnimatedStyle}>
+        {(['myTrips', 'likedTrips'] as TabType[]).map((tab) => {
+          const hook = tab === 'myTrips' ? myTripsHook : likedTripsHook;
 
-            return (
-              <View
-                key={tab}
-                style={{ display: activeTab === tab ? 'flex' : 'none' }}
-              >
-                <View className="flex-row flex-wrap w-full">
-                  {hook.trips.map((item) => (
-                    <TripCard
-                      key={item.id}
-                      trip={item}
-                      onPress={(id) =>
-                        router.push({
-                          pathname: '/trip/[id]',
-                          params: { id },
-                        })
-                      }
-                    />
-                  ))}
+          return (
+            <View
+              key={tab}
+              style={{ display: activeTab === tab ? 'flex' : 'none' }}
+            >
+              <View className="flex-row flex-wrap w-full">
+                {hook.trips.map((item) => (
+                  <TripCard
+                    key={item.id}
+                    trip={item}
+                    onPress={(id) =>
+                      router.push({
+                        pathname: '/trip/[id]',
+                        params: { id },
+                      })
+                    }
+                  />
+                ))}
 
-                  {hook.tripsLoading && hook.trips.length === 0 && (
-                    <>
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <TripSkeleton key={i} />
-                      ))}
-                    </>
-                  )}
+                {hook.tripsLoading && hook.trips.length === 0 && (
+                  <>
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <TripSkeleton key={i} />
+                    ))}
+                  </>
+                )}
+              </View>
+
+              {!hook.tripsLoading && hook.trips.length === 0 && (
+                <View className="py-20 items-center w-full">
+                  <Ionicons
+                    name={
+                      tab === 'myTrips'
+                        ? 'map-outline'
+                        : 'heart-dislike-outline'
+                    }
+                    size={40}
+                    color="#D1D5DB"
+                  />
+                  <Text className="text-gray-400 mt-2 font-medium">
+                    {tab === 'myTrips'
+                      ? 'Henüz rota oluşturmadın.'
+                      : 'Beğendiğin rota bulunamadı.'}
+                  </Text>
                 </View>
+              )}
 
-                {!hook.tripsLoading && hook.trips.length === 0 && (
-                  <View className="py-20 items-center w-full">
-                    <Ionicons
-                      name={
-                        tab === 'myTrips'
-                          ? 'map-outline'
-                          : 'heart-dislike-outline'
-                      }
-                      size={40}
-                      color="#D1D5DB"
-                    />
-                    <Text className="text-gray-400 mt-2 font-medium">
-                      {tab === 'myTrips'
-                        ? 'Henüz rota oluşturmadın.'
-                        : 'Beğendiğin rota bulunamadı.'}
-                    </Text>
-                  </View>
+              <View className="w-full py-10">
+                {hook.tripsLoading && hook.trips.length > 0 ? (
+                  <ActivityIndicator size="small" color="#4ECDC4" />
+                ) : (
+                  hook.hasMore && (
+                    <TouchableOpacity
+                      onPress={hook.loadMore}
+                      className="items-center"
+                    >
+                      <Text className="text-[#4ECDC4] font-bold">
+                        Daha Fazla Göster
+                      </Text>
+                    </TouchableOpacity>
+                  )
                 )}
 
-                <View className="w-full py-10">
-                  {hook.tripsLoading && hook.trips.length > 0 ? (
-                    <ActivityIndicator size="small" color="#4ECDC4" />
-                  ) : (
-                    hook.hasMore && (
-                      <TouchableOpacity
-                        onPress={hook.loadMore}
-                        className="items-center"
-                      >
-                        <Text className="text-[#4ECDC4] font-bold">
-                          Daha Fazla Göster
-                        </Text>
-                      </TouchableOpacity>
-                    )
-                  )}
-
-                  {!hook.hasMore && hook.trips.length > 0 && (
-                    <Text className="text-gray-400 text-center text-xs">
-                      Tüm rotalar yüklendi
-                    </Text>
-                  )}
-                </View>
+                {!hook.hasMore && hook.trips.length > 0 && (
+                  <Text className="text-gray-400 text-center text-xs">
+                    Tüm rotalar yüklendi
+                  </Text>
+                )}
               </View>
-            );
-          })}
-        </Animated.View>
-      </ScrollView>
-    </View>
+            </View>
+          );
+        })}
+      </Animated.View>
+    </ScrollView>
   );
 }
