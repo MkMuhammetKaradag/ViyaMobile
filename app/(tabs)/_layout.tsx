@@ -1,35 +1,35 @@
 import ScreenWrapper from '@/components/common/ScreenWrapper';
-import { Ionicons } from '@expo/vector-icons'; // Expo ile hazır gelir
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
-
-import { Platform, useColorScheme } from 'react-native';
+import { Platform } from 'react-native';
 
 export default function TabsLayout() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
-
-  const isDark = colorScheme === 'dark';
-  const themeColor = isDark ? '#000000' : '#FFFFFF';
+  const theme = useThemeColors();
 
   return (
+    // ScreenWrapper zaten arka planı ve status barı hallediyor
     <ScreenWrapper>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#4ECDC4',
-          tabBarInactiveTintColor: '#94a3b8',
+          // 3. Renkleri artık theme objesinden dinamik çekiyoruz
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.subtext,
           tabBarStyle: {
-            backgroundColor: themeColor,
+            backgroundColor: theme.background, // themeColor yerine theme.background
             borderTopWidth: 1,
-            borderTopColor: isDark ? '#1e293b' : '#f1f5f9',
-            height: Platform.OS === 'ios' ? 88 : 65, // iOS için standart yükseklik
+            borderTopColor: theme.border, // border rengi de dinamik
+            height: Platform.OS === 'ios' ? 88 : 65,
             paddingBottom: Platform.OS === 'ios' ? 30 : 10,
             paddingTop: 10,
-            elevation: 0, // Android alt gölgesini sıfırla (beyazlık yapabilir)
-            shadowOpacity: 0, // iOS gölgesini sıfırla
+            elevation: 0,
+            shadowOpacity: 0,
           },
           headerShown: false,
         }}
       >
+        {/* Ekranlar aynı kalıyor, sadece ikon renkleri tabBarActiveTintColor'dan otomatik beslenir */}
         <Tabs.Screen
           name="home/index"
           options={{
@@ -39,7 +39,7 @@ export default function TabsLayout() {
             ),
           }}
         />
-        {/* 🧭 KEŞFET (ANA SAYFA) */}
+
         <Tabs.Screen
           name="explore/index"
           options={{
@@ -55,22 +55,17 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
-          name="create-trip-handler" // Gerçek bir dosya olmasına gerek yok
+          name="create-trip-handler"
           options={{
-            title: '', // Yazı olmasın
+            title: '',
             tabBarIcon: ({ color }) => (
-              <Ionicons
-                name="add-circle"
-                size={26}
-                color={color}
-                // style={{ marginBottom: 4 }} // Biraz yukarı taşsın
-              />
+              <Ionicons name="add-circle" size={26} color={color} />
             ),
           }}
           listeners={{
             tabPress: (e) => {
-              e.preventDefault(); // Sayfaya gitmesini engelle
-              router.push('/trip/create'); // Bizim modalı aç!
+              e.preventDefault();
+              router.push('/trip/create');
             },
           }}
         />

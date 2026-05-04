@@ -76,6 +76,30 @@ export function useCreateTrip() {
     setWaypoints((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  const removeCoverImage = useCallback(() => {
+    setCoverImageUrl('');
+  }, []);
+
+  const pickCoverImage = useCallback(async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 5],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setIsCoverUploading(true);
+      try {
+        const url = await uploadToCloudinary(result.assets[0].uri);
+        setCoverImageUrl(url);
+      } catch {
+        Alert.alert('Hata', 'Kapak resmi yüklenemedi.');
+      } finally {
+        setIsCoverUploading(false);
+      }
+    }
+  }, []);
+
   const updateWaypoint = useCallback(
     (index: number, field: keyof WaypointDraft, value: any) => {
       setWaypoints((prev) => {
@@ -262,6 +286,7 @@ export function useCreateTrip() {
     // Actions
     addCategory,
     removeCategory,
+
     onDateChange,
     addWaypoint,
     removeWaypoint,
@@ -274,7 +299,7 @@ export function useCreateTrip() {
     deleteTag,
     handleSave,
 
-    // pickCoverImage,
-    // removeCoverImage,
+    pickCoverImage,
+    removeCoverImage,
   };
 }

@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useUserSearch } from '@/src/hooks/useUserSearch';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -32,23 +33,52 @@ export default function SearchScreen() {
     if (text.length === 0) setIsSearched(false);
   };
 
+  const theme = useThemeColors();
+
   return (
-    <View className="flex-1 bg-white pt-12">
-      {/* Search Header */}
-      <View className="flex-row items-center px-4 mb-2">
-        <TouchableOpacity onPress={() => router.back()} className="mr-3">
-          <Ionicons name="arrow-back" size={24} color="black" />
+    <View
+      style={{ flex: 1, backgroundColor: theme.background, paddingTop: 48 }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          marginBottom: 8,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginRight: 12 }}
+        >
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
 
-        <View className="flex-1 flex-row items-center bg-gray-100 rounded-xl px-3 py-1.5">
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.surface,
+            borderRadius: 24,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+          }}
+        >
           <TextInput
             placeholder="Kullanıcı ara..."
+            placeholderTextColor={theme.placeholder}
             autoFocus
             value={query}
             onChangeText={handleTextChange}
-            onSubmitEditing={handleSearchSubmit} // Klavyedeki ara/büyüteç butonu
-            returnKeyType="search" // Klavyede büyüteç ikonu çıkartır
-            className="flex-1 text-base py-1"
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
+            style={{
+              flex: 1,
+              fontSize: 16,
+              color: theme.text,
+              paddingVertical: 2,
+            }}
           />
           {query.length > 0 && (
             <TouchableOpacity
@@ -57,14 +87,20 @@ export default function SearchScreen() {
                 setIsSearched(false);
               }}
             >
-              <Ionicons name="close-circle" size={18} color="#94a3b8" />
+              <Ionicons name="close-circle" size={18} color={theme.subtext} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       {isSearched && (
-        <View className="flex-row border-b border-gray-100">
+        <View
+          style={{
+            flexDirection: 'row',
+            borderBottomWidth: 1,
+            borderBottomColor: theme.border,
+          }}
+        >
           {[
             { id: 'all', label: 'Senin İçin' },
             { id: 'accounts', label: 'Hesaplar' },
@@ -73,10 +109,21 @@ export default function SearchScreen() {
             <TouchableOpacity
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 items-center ${activeTab === tab.id ? 'border-b-2 border-black' : ''}`}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                alignItems: 'center',
+                borderBottomWidth: activeTab === tab.id ? 2 : 0,
+                borderBottomColor:
+                  activeTab === tab.id ? theme.primary : 'transparent',
+              }}
             >
               <Text
-                className={`text-sm ${activeTab === tab.id ? 'font-bold text-black' : 'text-gray-500'}`}
+                style={{
+                  fontSize: 14,
+                  fontWeight: activeTab === tab.id ? '800' : '400',
+                  color: activeTab === tab.id ? theme.text : theme.subtext,
+                }}
               >
                 {tab.label}
               </Text>
@@ -104,12 +151,26 @@ export default function SearchScreen() {
               onPress={() =>
                 router.push({ pathname: '/user/[id]', params: { id: item.id } })
               }
-              className="flex-row items-center px-4 py-3"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+              }}
             >
-              <View className="w-12 h-12 rounded-full bg-gray-200" />
-              <View className="ml-3">
-                <Text className="font-bold">@{item.username}</Text>
-                <Text className="text-gray-500 text-sm">
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 999,
+                  backgroundColor: theme.surface,
+                }}
+              />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={{ color: theme.text, fontWeight: '700' }}>
+                  @{item.username}
+                </Text>
+                <Text style={{ color: theme.subtext, fontSize: 12 }}>
                   {item.first_name} {item.last_name}
                 </Text>
               </View>

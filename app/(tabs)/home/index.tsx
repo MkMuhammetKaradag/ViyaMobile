@@ -1,31 +1,30 @@
+import ScreenWrapper from '@/components/common/ScreenWrapper';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useUserStore } from '@/src/store/useUserStore';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
-import { apiClient } from '../../../src/api/client'; // Kendi dosya yoluna göre ayarla
+import { apiClient } from '../../../src/api/client';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { logout } = useUserStore();
+  const colors = useThemeColors();
+
   const handleSignOut = async () => {
     try {
-      // 1. Backend'e çıkış isteği at (Cookie'yi temizlemesi için)
       await apiClient.post('/api/v1/auth/signout');
-
-      // 2. Yerel saklanan flag varsa temizle
       await SecureStore.deleteItemAsync('hasSession');
       logout();
       Alert.alert('Çıkış Yapıldı', 'Başarıyla çıkış yaptınız.');
-
-      // 3. Giriş ekranına geri dön
-      router.replace('/(auth)'); // Kendi sign-in yoluna göre ayarla
+      router.replace('/(auth)');
     } catch (error) {
       console.error('Çıkış hatası:', error);
-      // Hata olsa bile kullanıcıyı dışarı atabiliriz
       router.replace('/(auth)');
     }
   };
+
   const handleRequest = async () => {
     try {
       const res = await apiClient.get(
@@ -36,41 +35,110 @@ export default function HomeScreen() {
       console.error('get trip error:', error);
     }
   };
+
   return (
-    <View className="flex-1 justify-center items-center bg-gray-300 px-6">
-      {/* Başlık Bölümü */}
-      <View className="items-center mb-12">
-        <Text className="text-3xl font-black text-gray-800 tracking-tight">
-          Ana Sayfa
-        </Text>
-        <View className="w-12 h-1 bg-[#4ECDC4] mt-1 rounded-full" />
-        <Text className="text-base text-gray-500 mt-4 text-center">
-          Viya Uygulamasına Hoş Geldiniz!
-        </Text>
-      </View>
-
-      {/* Aksiyon Butonları */}
-      <View className="w-full space-y-4">
-        {/* Test İstek Butonu (Viya Turkuazı) */}
-        <TouchableOpacity
-          className="bg-[#4ECDC4] h-14 rounded-2xl flex-row items-center justify-center shadow-lg shadow-teal-500/30"
-          onPress={handleRequest}
-        >
-          <Text className="text-white text-base font-bold tracking-widest uppercase">
-            Test İstek At
+    <ScreenWrapper>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.background,
+          paddingHorizontal: 24,
+        }}
+      >
+        <View style={{ alignItems: 'center', marginBottom: 48 }}>
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 28,
+              fontWeight: '900',
+              letterSpacing: 0.2,
+            }}
+          >
+            Ana Sayfa
           </Text>
-        </TouchableOpacity>
-
-        {/* Çıkış Yap Butonu (Viya Kırmızısı) */}
-        <TouchableOpacity
-          className="bg-[#FF6B6B] h-14 rounded-2xl flex-row items-center justify-center shadow-lg shadow-red-500/30 mt-4"
-          onPress={handleSignOut}
-        >
-          <Text className="text-white text-base font-bold tracking-widest uppercase">
-            Çıkış Yap
+          <View
+            style={{
+              width: 48,
+              height: 4,
+              backgroundColor: colors.primary,
+              marginTop: 8,
+              borderRadius: 999,
+            }}
+          />
+          <Text
+            style={{
+              color: colors.subtext,
+              fontSize: 16,
+              marginTop: 16,
+              textAlign: 'center',
+            }}
+          >
+            Viya Uygulamasına Hoş Geldiniz!
           </Text>
-        </TouchableOpacity>
+        </View>
+
+        <View style={{ width: '100%', gap: 16 }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.primary,
+              height: 56,
+              borderRadius: 24,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: colors.primary,
+              shadowOpacity: 0.18,
+              shadowRadius: 14,
+              elevation: 6,
+            }}
+            onPress={() => {
+              /* istek fonksiyonun */
+            }}
+          >
+            <Text
+              style={{
+                color: colors.accentText,
+                fontSize: 16,
+                fontWeight: '800',
+                letterSpacing: 1,
+              }}
+            >
+              Test İstek At
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: colors.secondary,
+              height: 56,
+              borderRadius: 24,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: colors.secondary,
+              shadowOpacity: 0.18,
+              shadowRadius: 14,
+              elevation: 6,
+            }}
+            onPress={() => {
+              /* çıkış fonksiyonun */
+            }}
+          >
+            <Text
+              style={{
+                color: colors.accentText,
+                fontSize: 16,
+                fontWeight: '800',
+                letterSpacing: 1,
+              }}
+            >
+              Çıkış Yap
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScreenWrapper>
   );
 }

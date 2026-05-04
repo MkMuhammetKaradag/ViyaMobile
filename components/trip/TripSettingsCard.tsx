@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React from 'react';
 import { Platform, Switch, Text, TouchableOpacity, View } from 'react-native';
@@ -23,61 +24,128 @@ export function TripSettingsCard({
   onShowPicker,
   onDateChange,
 }: Props) {
+  const theme = useThemeColors();
+
   return (
-    <View className="mb-8">
-      {/* Switch'ler */}
-      <View className="bg-gray-50 p-4 rounded-3xl mb-4 border border-gray-100">
-        <Text className="text-gray-400 font-bold text-[10px] uppercase mb-4 ml-1">
+    <View style={{ marginBottom: 32 }}>
+      <View
+        style={{
+          backgroundColor: theme.surface,
+          padding: 16,
+          borderRadius: 32,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: theme.border,
+        }}
+      >
+        <Text
+          style={{
+            color: theme.subtext,
+            fontWeight: '900',
+            fontSize: 11,
+            textTransform: 'uppercase',
+            marginBottom: 16,
+          }}
+        >
           Gezi Ayarları
         </Text>
 
-        <View className="flex-row justify-between items-center mb-4 px-2">
-          <View className="flex-1 mr-4">
-            <Text className="font-bold text-gray-800">Herkese Açık</Text>
-            <Text className="text-gray-500 text-xs">
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+            paddingHorizontal: 4,
+          }}
+        >
+          <View style={{ flex: 1, marginRight: 16 }}>
+            <Text
+              style={{ color: theme.text, fontWeight: '900', fontSize: 15 }}
+            >
+              Herkese Açık
+            </Text>
+            <Text style={{ color: theme.subtext, fontSize: 12 }}>
               Bu rotayı diğer kullanıcılar keşfet sayfasında görebilir.
             </Text>
           </View>
           <Switch
-            trackColor={{ false: '#cbd5e1', true: '#4ECDC4' }}
-            thumbColor={isPublic ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: theme.border, true: theme.primary }}
+            thumbColor={isPublic ? theme.background : theme.surface}
             onValueChange={onPublicChange}
             value={isPublic}
           />
         </View>
 
-        <View className="h-[1px] bg-gray-200 my-2 w-full" />
+        <View
+          style={{
+            height: 1,
+            backgroundColor: theme.border,
+            marginVertical: 12,
+            width: '100%',
+          }}
+        />
 
-        <View className="flex-row justify-between items-center mt-2 px-2">
-          <View className="flex-1 mr-4">
-            <Text className="font-bold text-gray-800">Yayına Al</Text>
-            <Text className="text-gray-500 text-xs">
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 4,
+          }}
+        >
+          <View style={{ flex: 1, marginRight: 16 }}>
+            <Text
+              style={{ color: theme.text, fontWeight: '900', fontSize: 15 }}
+            >
+              Yayına Al
+            </Text>
+            <Text style={{ color: theme.subtext, fontSize: 12 }}>
               Pasif yaparsan gezi profilinde gizlenir.
             </Text>
           </View>
           <Switch
-            trackColor={{ false: '#cbd5e1', true: '#4ECDC4' }}
-            thumbColor={isActive ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: theme.border, true: theme.primary }}
+            thumbColor={isActive ? theme.background : theme.surface}
             onValueChange={onActiveChange}
             value={isActive}
           />
         </View>
       </View>
 
-      {/* Tarih seçici */}
-      <View className="flex-row justify-between items-center px-2">
-        <View className="flex-1 mr-4">
-          <Text className="font-bold text-gray-800">Yayın Tarihi</Text>
-          <Text className="text-gray-500 text-xs">
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 4,
+        }}
+      >
+        <View style={{ flex: 1, marginRight: 16 }}>
+          <Text style={{ color: theme.text, fontWeight: '900', fontSize: 15 }}>
+            Yayın Tarihi
+          </Text>
+          <Text style={{ color: theme.subtext, fontSize: 12 }}>
             {publishedAt.toLocaleDateString('tr-TR')} tarihinde paylaşılacak.
           </Text>
         </View>
 
         <TouchableOpacity
           onPress={onShowPicker}
-          className="bg-[#4ECDC4]/10 px-4 py-2 rounded-xl border border-[#4ECDC4]/20"
+          style={{
+            backgroundColor: theme.primary + '20',
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: theme.primary + '40',
+          }}
         >
-          <Text className="text-[#4ECDC4] font-bold text-xs">TARİH SEÇ</Text>
+          <Text
+            style={{ color: theme.primary, fontWeight: '900', fontSize: 12 }}
+          >
+            TARİH SEÇ
+          </Text>
         </TouchableOpacity>
       </View>
 

@@ -1,5 +1,6 @@
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import { TripCard } from '@/components/profile/TripCard';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useLikedTrips } from '@/src/hooks/useLikedTrips';
 import { useUserTrips } from '@/src/hooks/useUserTrips';
 import { useUserStore } from '@/src/store/useUserStore';
@@ -77,10 +78,19 @@ export default function ProfileScreen() {
     });
   };
 
+  const theme = useThemeColors();
+
   if (myTripsHook.loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#4ECDC4" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
@@ -89,14 +99,14 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      className="flex-1"
+      style={{ flex: 1, backgroundColor: theme.background }}
       showsVerticalScrollIndicator={false}
       stickyHeaderIndices={[1]}
       refreshControl={
         <RefreshControl
           refreshing={currentHook.refreshing}
           onRefresh={currentHook.onRefresh}
-          tintColor="#4ECDC4"
+          tintColor={theme.primary}
         />
       }
       onScroll={({ nativeEvent }) => {
@@ -108,28 +118,35 @@ export default function ProfileScreen() {
     >
       <ProfileHeader user={user} />
 
-      <View className="flex-row border-b border-gray-100  bg-white">
+      <View
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: theme.border,
+          backgroundColor: theme.surface,
+        }}
+        className="flex-row"
+      >
         <TouchableOpacity
           onPress={() => handleTabChange('myTrips')}
           activeOpacity={0.6}
-          className="flex-1 items-center py-4"
+          style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}
         >
           <Ionicons
             name="grid-outline"
             size={22}
-            color={activeTab === 'myTrips' ? '#4ECDC4' : '#9CA3AF'}
+            color={activeTab === 'myTrips' ? theme.primary : theme.subtext}
           />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => handleTabChange('likedTrips')}
           activeOpacity={0.6}
-          className="flex-1 items-center py-4"
+          style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}
         >
           <Ionicons
             name="heart-outline"
             size={24}
-            color={activeTab === 'likedTrips' ? '#4ECDC4' : '#9CA3AF'}
+            color={activeTab === 'likedTrips' ? theme.primary : theme.subtext}
           />
         </TouchableOpacity>
 
@@ -140,7 +157,7 @@ export default function ProfileScreen() {
               bottom: 0,
               width: '50%',
               height: 2,
-              backgroundColor: '#4ECDC4',
+              backgroundColor: theme.primary,
             },
             indicatorAnimatedStyle,
           ]}
@@ -180,7 +197,13 @@ export default function ProfileScreen() {
               </View>
 
               {!hook.tripsLoading && hook.trips.length === 0 && (
-                <View className="py-20 items-center w-full">
+                <View
+                  style={{
+                    paddingVertical: 80,
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
                   <Ionicons
                     name={
                       tab === 'myTrips'
@@ -188,9 +211,15 @@ export default function ProfileScreen() {
                         : 'heart-dislike-outline'
                     }
                     size={40}
-                    color="#D1D5DB"
+                    color={theme.border}
                   />
-                  <Text className="text-gray-400 mt-2 font-medium">
+                  <Text
+                    style={{
+                      color: theme.subtext,
+                      marginTop: 8,
+                      fontWeight: '500',
+                    }}
+                  >
                     {tab === 'myTrips'
                       ? 'Henüz rota oluşturmadın.'
                       : 'Beğendiğin rota bulunamadı.'}
@@ -205,9 +234,9 @@ export default function ProfileScreen() {
                   hook.hasMore && (
                     <TouchableOpacity
                       onPress={hook.loadMore}
-                      className="items-center"
+                      style={{ alignItems: 'center' }}
                     >
-                      <Text className="text-[#4ECDC4] font-bold">
+                      <Text style={{ color: theme.primary, fontWeight: '700' }}>
                         Daha Fazla Göster
                       </Text>
                     </TouchableOpacity>
@@ -215,7 +244,13 @@ export default function ProfileScreen() {
                 )}
 
                 {!hook.hasMore && hook.trips.length > 0 && (
-                  <Text className="text-gray-400 text-center text-xs">
+                  <Text
+                    style={{
+                      color: theme.subtext,
+                      textAlign: 'center',
+                      fontSize: 12,
+                    }}
+                  >
                     Tüm rotalar yüklendi
                   </Text>
                 )}

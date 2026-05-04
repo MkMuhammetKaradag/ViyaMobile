@@ -1,4 +1,5 @@
 import { apiClient } from '@/src/api/client';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -32,8 +33,8 @@ export const CategorySearchPicker = ({
   const [results, setResults] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const theme = useThemeColors();
 
-  // Input ref — modal açıldığında otomatik focus için
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -62,7 +63,6 @@ export const CategorySearchPicker = ({
     setQuery('');
     setResults([]);
     setModalVisible(true);
-    // Modal render olduktan sonra focus ver
     setTimeout(() => inputRef.current?.focus(), 150);
   };
 
@@ -81,25 +81,48 @@ export const CategorySearchPicker = ({
   };
 
   return (
-    <View className="mb-4">
-      <Text className="text-gray-400 text-[10px] font-black uppercase mb-2 ml-1">
+    <View style={{ marginBottom: 16 }}>
+      <Text
+        style={{
+          color: theme.subtext,
+          fontSize: 10,
+          fontWeight: '900',
+          textTransform: 'uppercase',
+          marginBottom: 8,
+          marginLeft: 4,
+        }}
+      >
         {label}
       </Text>
 
-      {/* Seçili kategori veya açma butonu */}
       <TouchableOpacity
         onPress={handleOpen}
-        className="flex-row items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: theme.surface,
+          borderWidth: 1,
+          borderColor: theme.border,
+          padding: 16,
+          borderRadius: 24,
+          shadowColor: theme.text,
+          shadowOpacity: 0.03,
+          shadowRadius: 10,
+          elevation: 1,
+        }}
       >
         <Ionicons
           name={selectedCategory ? 'checkmark-circle' : 'search'}
           size={18}
-          color={selectedCategory ? '#4ECDC4' : '#94a3b8'}
+          color={selectedCategory ? theme.primary : theme.placeholder}
         />
         <Text
-          className={`flex-1 ml-3 font-bold ${
-            selectedCategory ? 'text-gray-800' : 'text-gray-400'
-          }`}
+          style={{
+            flex: 1,
+            marginLeft: 12,
+            fontWeight: '800',
+            color: selectedCategory ? theme.text : theme.subtext,
+          }}
         >
           {selectedCategory ? selectedCategory.name : 'Kategori ara...'}
         </Text>
@@ -111,45 +134,85 @@ export const CategorySearchPicker = ({
             }}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="close-circle" size={18} color="#94a3b8" />
+            <Ionicons name="close-circle" size={18} color={theme.subtext} />
           </TouchableOpacity>
         )}
       </TouchableOpacity>
 
-      {/* Modal — klavye katmanının üzerinde render edilir */}
       <Modal
         visible={modalVisible}
         transparent
         animationType="slide"
         onRequestClose={handleClose}
       >
-        {/* Arka plan — tıklanınca kapat */}
         <TouchableWithoutFeedback onPress={handleClose}>
-          <View className="flex-1 bg-black/40" />
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} />
         </TouchableWithoutFeedback>
 
-        {/* Arama paneli — ekranın alt kısmında */}
-        <View className="bg-white rounded-t-3xl px-6 pt-4 pb-8">
-          {/* Tutamaç çizgisi */}
-          <View className="w-10 h-1 bg-gray-200 rounded-full self-center mb-4" />
+        <View
+          style={{
+            backgroundColor: theme.surface,
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: 32,
+          }}
+        >
+          <View
+            style={{
+              width: 40,
+              height: 4,
+              backgroundColor: theme.border,
+              borderRadius: 999,
+              alignSelf: 'center',
+              marginBottom: 16,
+            }}
+          />
 
-          <Text className="text-base font-black text-gray-800 mb-3">
+          <Text
+            style={{
+              color: theme.text,
+              fontSize: 18,
+              fontWeight: '900',
+              marginBottom: 16,
+            }}
+          >
             Kategori Seç
           </Text>
 
-          {/* Arama input */}
-          <View className="flex-row items-center bg-gray-50 border border-gray-100 px-4 rounded-2xl mb-3">
-            <Ionicons name="search" size={18} color="#94a3b8" />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: theme.background,
+              borderWidth: 1,
+              borderColor: theme.border,
+              paddingHorizontal: 16,
+              borderRadius: 24,
+              marginBottom: 16,
+            }}
+          >
+            <Ionicons name="search" size={18} color={theme.placeholder} />
             <TextInput
               ref={inputRef}
               placeholder="Kategori ara..."
-              className="flex-1 ml-3 py-4 font-bold text-gray-800"
+              placeholderTextColor={theme.placeholder}
+              style={{
+                flex: 1,
+                marginLeft: 12,
+                paddingVertical: 14,
+                fontWeight: '800',
+                color: theme.text,
+              }}
               value={query}
               onChangeText={setQuery}
               returnKeyType="search"
               autoCorrect={false}
             />
-            {loading && <ActivityIndicator size="small" color="#4ECDC4" />}
+            {loading && (
+              <ActivityIndicator size="small" color={theme.primary} />
+            )}
             {query.length > 0 && !loading && (
               <TouchableOpacity
                 onPress={() => {
@@ -157,29 +220,55 @@ export const CategorySearchPicker = ({
                   setResults([]);
                 }}
               >
-                <Ionicons name="close" size={18} color="#94a3b8" />
+                <Ionicons name="close" size={18} color={theme.subtext} />
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Sonuç listesi */}
           {results.length > 0 ? (
             results.map((item) => (
               <TouchableOpacity
                 key={item.id}
                 onPress={() => handleSelect(item)}
-                className="flex-row justify-between items-center py-3 border-b border-gray-50"
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingVertical: 14,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                }}
               >
-                <Text className="font-bold text-gray-700">{item.name}</Text>
-                <Ionicons name="add-circle-outline" size={20} color="#4ECDC4" />
+                <Text style={{ color: theme.text, fontWeight: '900' }}>
+                  {item.name}
+                </Text>
+                <Ionicons
+                  name="add-circle-outline"
+                  size={20}
+                  color={theme.primary}
+                />
               </TouchableOpacity>
             ))
           ) : query.length > 1 && !loading ? (
-            <Text className="text-gray-400 italic text-center py-6">
+            <Text
+              style={{
+                color: theme.subtext,
+                fontStyle: 'italic',
+                textAlign: 'center',
+                paddingVertical: 24,
+              }}
+            >
               Kategori bulunamadı...
             </Text>
           ) : query.length === 0 ? (
-            <Text className="text-gray-400 text-center py-6 text-sm">
+            <Text
+              style={{
+                color: theme.subtext,
+                textAlign: 'center',
+                paddingVertical: 24,
+                fontSize: 14,
+              }}
+            >
               Aramak istediğiniz kategoriyi yazın
             </Text>
           ) : null}

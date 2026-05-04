@@ -1,4 +1,5 @@
 // components/profile/TripCard.tsx
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { TripSummary } from '@/src/types/trip';
 import { Ionicons } from '@expo/vector-icons';
 import { FC, useState } from 'react';
@@ -10,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
 interface TripCardProps {
   trip: TripSummary;
   onPress: (id: string) => void;
@@ -27,6 +29,7 @@ interface TripCardProps {
 export const TripCard: FC<TripCardProps> = ({ trip, onPress }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const theme = useThemeColors();
   const DEFAULT_IMAGE = require('@/assets/images/df.png');
 
   const imageUrl =
@@ -36,14 +39,25 @@ export const TripCard: FC<TripCardProps> = ({ trip, onPress }) => {
     <TouchableOpacity
       onPress={() => onPress(trip.id)}
       activeOpacity={0.9}
-      style={{ width: columnWidth, height: columnWidth * 1.2 }}
-      className="p-[0.5px] relative"
+      style={{
+        width: columnWidth,
+        height: columnWidth * 1.2,
+        padding: 0.5,
+        position: 'relative',
+      }}
     >
-      <View className="absolute inset-0 bg-neutral-900 m-[0.5px]" />
+      <View
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: theme.surface,
+          margin: 0.5,
+        }}
+      />
 
       <Image
         source={imageUrl ? DEFAULT_IMAGE : { uri: trip.cover_image_url }}
-        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
         onLoad={() => setIsLoaded(true)}
         onError={(e) => {
@@ -56,28 +70,48 @@ export const TripCard: FC<TripCardProps> = ({ trip, onPress }) => {
       />
 
       {!isLoaded && !hasError && (
-        <View className="absolute inset-0 justify-center items-center">
-          <ActivityIndicator size="small" color="#4ECDC4" />
+        <View
+          style={{
+            position: 'absolute',
+            inset: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="small" color={theme.primary} />
         </View>
       )}
 
-      <View className="absolute inset-0 bg-black/20" />
+      <View
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.2)',
+        }}
+      />
 
-      <View className="absolute bottom-2 left-2 right-2">
-        <Text className="text-white text-[11px] font-bold" numberOfLines={1}>
+      <View style={{ position: 'absolute', bottom: 8, left: 8, right: 8 }}>
+        <Text
+          style={{ color: theme.accentText, fontSize: 11, fontWeight: '900' }}
+          numberOfLines={1}
+        >
           {trip.title}
         </Text>
-        <View className="flex-row items-center mt-0.5">
-          <Ionicons name="eye-outline" size={10} color="white" />
-          <Text className="text-white text-[9px] ml-1">{trip.view_count}</Text>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
+        >
+          <Ionicons name="eye-outline" size={10} color={theme.accentText} />
+          <Text style={{ color: theme.accentText, fontSize: 9, marginLeft: 4 }}>
+            {trip.view_count}
+          </Text>
 
           <Ionicons
             name="location-outline"
             size={10}
-            color="white"
-            style={{ marginLeft: 8 }}
+            color={theme.accentText}
+            style={{ marginLeft: 10 }}
           />
-          <Text className="text-white text-[9px] ml-1">
+          <Text style={{ color: theme.accentText, fontSize: 9, marginLeft: 4 }}>
             {trip.waypoint_count}
           </Text>
         </View>

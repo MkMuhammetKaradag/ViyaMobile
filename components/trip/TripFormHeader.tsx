@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import React from 'react';
 import { TextInput, View } from 'react-native';
 
@@ -14,20 +15,42 @@ export function TripFormHeader({
   onTitleChange,
   onDescChange,
 }: Props) {
+  const theme = useThemeColors();
+
   return (
-    <View className="mb-8">
+    <View style={{ marginBottom: 32 }}>
       <TextInput
         placeholder="Rotalara bir isim ver..."
+        placeholderTextColor={theme.placeholder}
         value={title}
         onChangeText={onTitleChange}
-        className="text-xl font-bold p-4 bg-gray-50 rounded-2xl mb-4 border border-gray-100"
+        style={{
+          fontSize: 20,
+          fontWeight: '900',
+          padding: 16,
+          backgroundColor: theme.surface,
+          borderRadius: 24,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: theme.border,
+          color: theme.text,
+        }}
       />
       <TextInput
         placeholder="Hikayen ne?"
+        placeholderTextColor={theme.placeholder}
         value={desc}
         onChangeText={onDescChange}
         multiline
-        className="p-4 bg-gray-50 rounded-2xl min-h-[100]"
+        style={{
+          padding: 16,
+          backgroundColor: theme.surface,
+          borderRadius: 24,
+          minHeight: 100,
+          borderWidth: 1,
+          borderColor: theme.border,
+          color: theme.text,
+        }}
       />
     </View>
   );

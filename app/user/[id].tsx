@@ -1,5 +1,6 @@
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import { TripCard } from '@/components/profile/TripCard';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useOtherUserTrips } from '@/src/hooks/user/useOtherUserTrips';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -23,10 +24,19 @@ export default function UserProfileScreen() {
   const { trips, userProfile, loading, isCloseToBottom, loadMore } =
     useOtherUserTrips(id);
 
+  const theme = useThemeColors();
+
   if (loading && !userProfile) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#4ECDC4" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
@@ -34,13 +44,25 @@ export default function UserProfileScreen() {
   const canSeeTrips = !userProfile?.is_private || userProfile?.is_following;
 
   return (
-    <SafeAreaView className="flex-1">
-      <View className="flex-1">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <View style={{ flex: 1 }}>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="absolute top-4 left-4 z-50 bg-white/80 p-2 rounded-full shadow-md"
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 50,
+            backgroundColor: theme.surface,
+            padding: 10,
+            borderRadius: 999,
+            shadowColor: theme.text,
+            shadowOpacity: 0.08,
+            shadowRadius: 10,
+            elevation: 4,
+          }}
         >
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
 
         <ScrollView
@@ -55,7 +77,14 @@ export default function UserProfileScreen() {
           <ProfileHeader user={userProfile} isOtherUser={true} />
 
           {/* 2. Sticky Tab Bar */}
-          <View className="flex-row border-b border-gray-100 bg-white">
+          <View
+            style={{
+              borderBottomWidth: 1,
+              borderBottomColor: theme.border,
+              backgroundColor: theme.surface,
+            }}
+            className="flex-row"
+          >
             {(['trips', 'reposts', 'continued'] as TabType[]).map((tab) => {
               const icons: Record<TabType, any> = {
                 trips: 'grid-outline',
@@ -67,12 +96,18 @@ export default function UserProfileScreen() {
                 <TouchableOpacity
                   key={tab}
                   onPress={() => setActiveTab(tab)}
-                  className={`flex-1 items-center py-3 border-b-2 ${isActive ? 'border-[#4ECDC4]' : 'border-transparent'}`}
+                  style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    paddingVertical: 12,
+                    borderBottomWidth: 2,
+                    borderBottomColor: isActive ? theme.primary : 'transparent',
+                  }}
                 >
                   <Ionicons
                     name={icons[tab]}
                     size={22}
-                    color={isActive ? '#4ECDC4' : '#9CA3AF'}
+                    color={isActive ? theme.primary : theme.subtext}
                   />
                 </TouchableOpacity>
               );
@@ -80,23 +115,60 @@ export default function UserProfileScreen() {
           </View>
 
           {/* 3. İçerik Alanı */}
-          <View className="min-h-[500px]">
+          <View style={{ minHeight: 500 }}>
             {!canSeeTrips ? (
-              <View className="items-center justify-center py-20 px-10">
-                <View className="bg-gray-100 p-6 rounded-full mb-4">
-                  <Ionicons name="lock-closed" size={40} color="#9CA3AF" />
+              <View
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 80,
+                  paddingHorizontal: 32,
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: theme.surface,
+                    padding: 24,
+                    borderRadius: 999,
+                    marginBottom: 16,
+                  }}
+                >
+                  <Ionicons
+                    name="lock-closed"
+                    size={40}
+                    color={theme.subtext}
+                  />
                 </View>
-                <Text className="text-gray-800 font-bold text-lg text-center">
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontWeight: '700',
+                    fontSize: 18,
+                    textAlign: 'center',
+                  }}
+                >
                   Bu Hesap Gizli
                 </Text>
-                <Text className="text-gray-500 text-center mt-2">
+                <Text
+                  style={{
+                    color: theme.subtext,
+                    textAlign: 'center',
+                    marginTop: 8,
+                  }}
+                >
                   Rotaları görmek için takip etmelisin.
                 </Text>
               </View>
             ) : (
               <View>
                 {activeTab === 'trips' && (
-                  <View className="flex-row flex-wrap w-full">
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      width: '100%',
+                    }}
+                  >
                     {trips.map((item) => (
                       <TripCard
                         key={item.id}
@@ -105,7 +177,14 @@ export default function UserProfileScreen() {
                       />
                     ))}
                     {trips.length === 0 && (
-                      <Text className="text-center w-full py-10 text-gray-400">
+                      <Text
+                        style={{
+                          textAlign: 'center',
+                          width: '100%',
+                          paddingVertical: 40,
+                          color: theme.subtext,
+                        }}
+                      >
                         Henüz rota yok.
                       </Text>
                     )}

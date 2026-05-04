@@ -1,4 +1,5 @@
 import { ExploreTripCard } from '@/components/explore/ExploreTripCard';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useExplore } from '@/src/hooks/useExplore';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -15,8 +16,10 @@ export default function ExploreScreen() {
   const router = useRouter();
   const { trips, loading, refreshing, onRefresh, loadMore } = useExplore();
 
+  const theme = useThemeColors();
+
   return (
-    <View className="flex-1 bg-red">
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <FlatList
         data={trips}
         numColumns={3}
@@ -38,21 +41,37 @@ export default function ExploreScreen() {
         }
         // LİSTE BAŞLIĞI: Burası artık sadece bir buton!
         ListHeaderComponent={
-          <View className="px-3 py-4 ">
+          <View style={{ paddingHorizontal: 12, paddingVertical: 12 }}>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => router.push('/search')} // Dokunulduğu an yeni sayfaya uçurur
-              className="flex-row items-center bg-gray-100 rounded-xl px-3 py-3 border border-gray-200"
+              onPress={() => router.push('/search')}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.surface,
+                borderRadius: 24,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
             >
-              <Ionicons name="search" size={20} color="#94a3b8" />
-              <Text className="ml-2 text-base text-gray-400">
+              <Ionicons name="search" size={20} color={theme.subtext} />
+              <Text
+                style={{ marginLeft: 8, fontSize: 16, color: theme.subtext }}
+              >
                 Kullanıcı veya gezi ara...
               </Text>
             </TouchableOpacity>
           </View>
         }
         ListFooterComponent={() =>
-          loading && <ActivityIndicator className="my-8" color="#4ECDC4" />
+          loading && (
+            <ActivityIndicator
+              style={{ marginVertical: 32 }}
+              color={theme.primary}
+            />
+          )
         }
       />
     </View>

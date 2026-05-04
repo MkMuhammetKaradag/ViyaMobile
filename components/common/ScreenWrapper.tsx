@@ -1,6 +1,8 @@
+import { useTheme } from '@/src/hooks/theme/ThemeContext';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import * as NavigationBar from 'expo-navigation-bar';
 import React, { useEffect } from 'react';
-import { Platform, StatusBar, useColorScheme, View } from 'react-native';
+import { Platform, StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenWrapperProps {
@@ -12,11 +14,11 @@ export default function ScreenWrapper({
   children,
   backgroundColor,
 }: ScreenWrapperProps) {
-  const colorScheme = useColorScheme();
+  const { resolvedTheme } = useTheme();
   const insets = useSafeAreaInsets();
-
-  const isDark = colorScheme === 'dark';
-  const finalColor = backgroundColor || (isDark ? '#000000' : '#FFFFFF');
+  const colors = useThemeColors();
+  const isDark = resolvedTheme === 'dark';
+  const finalColor = backgroundColor || colors.background;
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -31,8 +33,9 @@ export default function ScreenWrapper({
       style={{
         flex: 1,
         backgroundColor: finalColor,
-        paddingTop: insets.top + 2, // status bar alanı
-        paddingBottom: insets.bottom, // navigation bar alanı
+        // Status bar ve güvenli alan boşlukları
+        paddingTop: Platform.OS === 'android' ? insets.top + 2 : insets.top,
+        paddingBottom: insets.bottom,
       }}
     >
       <View style={{ flex: 1 }}>{children}</View>

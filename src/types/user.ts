@@ -11,6 +11,7 @@ export interface UserProfile {
   banner_url: string | null;
   is_private: boolean | null;
   is_following: boolean | null;
+  is_requested: boolean | null;
   is_me: boolean;
   preferences: string[];
 }

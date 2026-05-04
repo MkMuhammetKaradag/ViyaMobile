@@ -1,4 +1,5 @@
 // components/explore/ExploreTripCard.tsx
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { TripExploreDTO } from '@/src/types/trip';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -25,6 +26,7 @@ export const ExploreTripCard = ({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const theme = useThemeColors();
 
   const usePlaceholder =
     !trip.display_image || hasError || trip.display_image === '';
@@ -34,11 +36,10 @@ export const ExploreTripCard = ({
       onPress={() => onPress(trip.id)}
       activeOpacity={0.8}
       style={{ width: cardSize, height: cardSize }}
-      className="p-[0.5px] relative bg-gray-200"
     >
       <Image
         source={usePlaceholder ? DEFAULT_IMAGE : { uri: trip.display_image }}
-        className="w-full h-full"
+        style={{ width: '100%', height: '100%' }}
         resizeMode="cover"
         onLoad={() => setIsLoaded(true)}
         onError={(e) => {
@@ -51,23 +52,64 @@ export const ExploreTripCard = ({
       />
 
       {!isLoaded && !usePlaceholder && (
-        <View className="absolute inset-0 justify-center items-center">
-          <ActivityIndicator size="small" color="#4ECDC4" />
+        <View
+          style={{
+            position: 'absolute',
+            inset: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="small" color={theme.primary} />
         </View>
       )}
 
-      {/* 📍 Durak Sayısı */}
-      <View className="absolute top-1 right-1 bg-black/40 px-1 rounded flex-row items-center">
-        <Ionicons name="location" size={10} color="#4ECDC4" />
-        <Text className="text-white text-[9px] font-bold ml-0.5">
+      <View
+        style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          paddingHorizontal: 6,
+          borderRadius: 10,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}
+      >
+        <Ionicons name="location" size={10} color={theme.primary} />
+        <Text
+          style={{
+            color: theme.accentText,
+            fontSize: 9,
+            fontWeight: '900',
+            marginLeft: 4,
+          }}
+        >
           {trip.waypoint_count}
         </Text>
       </View>
 
-      {/* 👁️ Görüntülenme Sayısı */}
-      <View className="absolute bottom-1 left-1 flex-row items-center bg-black/20 px-1 rounded">
-        <Ionicons name="eye" size={10} color="white" />
-        <Text className="text-white text-[9px] font-bold ml-0.5">
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 8,
+          left: 8,
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.25)',
+          paddingHorizontal: 6,
+          borderRadius: 10,
+        }}
+      >
+        <Ionicons name="eye" size={10} color={theme.accentText} />
+        <Text
+          style={{
+            color: theme.accentText,
+            fontSize: 9,
+            fontWeight: '900',
+            marginLeft: 4,
+          }}
+        >
           {trip.view_count}
         </Text>
       </View>

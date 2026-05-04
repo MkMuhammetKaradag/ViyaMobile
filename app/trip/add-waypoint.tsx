@@ -1,5 +1,6 @@
 import { MapPickerModal } from '@/components/trip/MapPickerModal';
 import { PhotoTagModal } from '@/components/trip/PhotoTagModal';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useAddWaypoint } from '@/src/hooks/useAddWaypoint';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -29,63 +30,130 @@ export default function AddWaypointScreen() {
   const currentPhoto =
     taggingPhotoIdx !== null ? wp.images[taggingPhotoIdx] : null;
 
+  const theme = useThemeColors();
+
   return (
-    <View className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView
-        className="flex-1 px-6 pt-16"
+        style={{ flex: 1, paddingHorizontal: 24, paddingTop: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Başlık */}
-        <View className="flex-row items-center mb-8">
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 32,
+          }}
+        >
           <TouchableOpacity
             onPress={() => router.back()}
-            className="mr-4 bg-gray-100 p-2 rounded-full"
+            style={{
+              marginRight: 16,
+              backgroundColor: theme.surface,
+              padding: 10,
+              borderRadius: 999,
+            }}
           >
-            <Ionicons name="close" size={24} color="black" />
+            <Ionicons name="close" size={24} color={theme.text} />
           </TouchableOpacity>
-          <Text className="text-2xl font-black text-gray-900">Durak Ekle</Text>
+          <Text style={{ color: theme.text, fontSize: 28, fontWeight: '900' }}>
+            Durak Ekle
+          </Text>
         </View>
 
-        {/* Durak adı */}
         <TextInput
           placeholder="Durak ismi..."
+          placeholderTextColor={theme.placeholder}
           value={wp.title}
           onChangeText={wp.setTitle}
-          className="bg-gray-50 p-5 rounded-3xl mb-4 font-bold border border-gray-100 text-lg"
+          style={{
+            backgroundColor: theme.surface,
+            padding: 20,
+            borderRadius: 32,
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: theme.border,
+            fontSize: 18,
+            color: theme.text,
+            fontWeight: '700',
+          }}
         />
 
-        {/* Konum seç */}
         <TouchableOpacity
           onPress={() => setMapVisible(true)}
-          className="bg-blue-50/50 p-5 rounded-3xl mb-4 border border-blue-100 flex-row items-center"
+          style={{
+            backgroundColor: theme.surface,
+            padding: 20,
+            borderRadius: 32,
+            marginBottom: 16,
+            borderWidth: 1,
+            borderColor: theme.border,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}
         >
-          <View className="bg-blue-500 p-3 rounded-2xl mr-4 shadow-sm">
-            <Ionicons name="map" size={20} color="white" />
+          <View
+            style={{
+              backgroundColor: theme.primary,
+              padding: 14,
+              borderRadius: 20,
+              marginRight: 16,
+              elevation: 2,
+            }}
+          >
+            <Ionicons name="map" size={20} color={theme.accentText} />
           </View>
-          <View className="flex-1">
-            <Text className="text-blue-500 font-bold text-[10px] uppercase">
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: theme.primary,
+                fontWeight: '800',
+                fontSize: 10,
+                textTransform: 'uppercase',
+              }}
+            >
               Konum Seç
             </Text>
-            <Text className="text-blue-900 font-bold text-sm">
+            <Text
+              style={{ color: theme.text, fontWeight: '800', fontSize: 14 }}
+            >
               {wp.location.latitude.toFixed(4)},{' '}
               {wp.location.longitude.toFixed(4)}
             </Text>
           </View>
         </TouchableOpacity>
 
-        {/* Açıklama */}
         <TextInput
           placeholder="Açıklama..."
+          placeholderTextColor={theme.placeholder}
           value={wp.desc}
           onChangeText={wp.setDesc}
           multiline
-          className="bg-gray-50 p-5 rounded-3xl mb-6 min-h-[120px] text-gray-700 border border-gray-100"
+          style={{
+            backgroundColor: theme.surface,
+            padding: 20,
+            borderRadius: 32,
+            marginBottom: 24,
+            minHeight: 120,
+            color: theme.text,
+            borderWidth: 1,
+            borderColor: theme.border,
+            textAlignVertical: 'top',
+          }}
         />
 
-        {/* Fotoğraflar */}
-        <View className="flex-row flex-wrap mb-8">
+        <View
+          style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 32 }}
+        >
           {wp.images.map((img, i) => (
-            <View key={i} className="mr-3 mb-3 relative">
+            <View
+              key={i}
+              style={{
+                marginRight: 12,
+                marginBottom: 12,
+                position: 'relative',
+              }}
+            >
               <TouchableOpacity onPress={() => setTaggingPhotoIdx(i)}>
                 <Image
                   source={{ uri: img.uri }}
@@ -93,8 +161,26 @@ export default function AddWaypointScreen() {
                   contentFit="cover"
                 />
                 {img.tags.length > 0 && (
-                  <View className="absolute -top-1 -right-1 bg-[#4ECDC4] rounded-full px-2 py-0.5 border-2 border-white">
-                    <Text className="text-[10px] text-white font-black">
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -4,
+                      backgroundColor: theme.primary,
+                      borderRadius: 999,
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderWidth: 2,
+                      borderColor: theme.background,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.accentText,
+                        fontSize: 10,
+                        fontWeight: '900',
+                      }}
+                    >
                       {img.tags.length}
                     </Text>
                   </View>
@@ -103,31 +189,62 @@ export default function AddWaypointScreen() {
 
               <TouchableOpacity
                 onPress={() => wp.removeImage(i)}
-                className="absolute -top-2 -left-2 bg-white rounded-full"
+                style={{
+                  position: 'absolute',
+                  top: -8,
+                  left: -8,
+                  backgroundColor: theme.surface,
+                  borderRadius: 999,
+                }}
               >
-                <Ionicons name="close-circle" size={22} color="#FF6B6B" />
+                <Ionicons name="close-circle" size={22} color={theme.danger} />
               </TouchableOpacity>
             </View>
           ))}
 
           <TouchableOpacity
             onPress={wp.pickImage}
-            className="w-24 h-24 bg-gray-50 rounded-3xl items-center justify-center border-2 border-dashed border-gray-200"
+            style={{
+              width: 96,
+              height: 96,
+              backgroundColor: theme.surface,
+              borderRadius: 24,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1,
+              borderStyle: 'dashed',
+              borderColor: theme.border,
+            }}
           >
-            <Ionicons name="camera" size={30} color="#94a3b8" />
+            <Ionicons name="camera" size={30} color={theme.subtext} />
           </TouchableOpacity>
         </View>
 
-        {/* Kaydet */}
         <TouchableOpacity
           onPress={wp.handleSave}
           disabled={wp.loading}
-          className="bg-[#4ECDC4] p-6 rounded-[32px] items-center mb-12 shadow-lg shadow-teal-200"
+          style={{
+            backgroundColor: theme.primary,
+            paddingVertical: 24,
+            borderRadius: 32,
+            alignItems: 'center',
+            marginBottom: 40,
+            shadowColor: theme.primary,
+            shadowOpacity: 0.2,
+            shadowRadius: 14,
+            elevation: 8,
+          }}
         >
           {wp.loading ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color={theme.accentText} />
           ) : (
-            <Text className="text-white font-black text-lg">
+            <Text
+              style={{
+                color: theme.accentText,
+                fontWeight: '900',
+                fontSize: 18,
+              }}
+            >
               YOLCULUĞA EKLE
             </Text>
           )}

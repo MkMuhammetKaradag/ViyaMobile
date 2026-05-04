@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -15,108 +16,214 @@ export default function ProfileHeader({
   isOtherUser = false,
 }: ProfileHeaderProps) {
   const router = useRouter();
-
+  const theme = useThemeColors();
+  const getButtonText = () => {
+    if (user?.is_following) return 'Takipten çık';
+    if (!user?.is_private) return 'Takip Et';
+    return user?.is_requested ? 'İstek Gönderildi' : 'Takip Et';
+  };
   return (
     <View>
-      {/* Banner Alanı */}
-      <View className="h-44 w-full bg-gray-200 relative">
+      <View
+        style={{
+          height: 176,
+          width: '100%',
+          backgroundColor: theme.surface,
+          position: 'relative',
+        }}
+      >
         {user?.banner_url ? (
           <Image
             source={{ uri: user.banner_url }}
-            className="w-full h-full"
+            style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
           />
         ) : (
-          <View className="w-full h-full bg-[#4ECDC4]/20 items-center justify-center">
+          <View
+            style={{
+              flex: 1,
+              width: '100%',
+              height: '100%',
+              backgroundColor: theme.primary + '33',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Ionicons
               name="images-outline"
               size={40}
-              color="#4ECDC4"
-              opacity={0.3}
+              color={theme.primary}
+              opacity={0.35}
             />
           </View>
         )}
 
-        {/* Düzenle Butonu */}
         {!isOtherUser && (
           <TouchableOpacity
             onPress={() => router.push('/(tabs)/profile/profile_edit')}
-            className="absolute right-4 top-12 bg-black/30 p-2 rounded-full backdrop-blur-md"
+            style={{
+              position: 'absolute',
+              right: 16,
+              top: 48,
+              backgroundColor: 'rgba(0,0,0,0.25)',
+              padding: 10,
+              borderRadius: 999,
+            }}
           >
-            <Ionicons name="settings-outline" size={20} color="white" />
+            <Ionicons
+              name="settings-outline"
+              size={20}
+              color={theme.accentText}
+            />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Profil Fotoğrafı ve Bilgiler */}
-      <View className="px-6 -mt-12">
-        <View className="w-24 h-24 rounded-full border-4 border-white bg-gray-100 overflow-hidden shadow-sm">
+      <View style={{ paddingHorizontal: 24, marginTop: -56 }}>
+        <View
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: 999,
+            borderWidth: 4,
+            borderColor: theme.background,
+            backgroundColor: theme.surface,
+            overflow: 'hidden',
+            shadowColor: theme.text,
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+            elevation: 4,
+          }}
+        >
           {user?.avatar_url ? (
             <Image
               source={{ uri: user.avatar_url }}
-              className="w-full h-full"
+              style={{ width: '100%', height: '100%' }}
             />
           ) : (
-            <View className="items-center justify-center flex-1 bg-gray-200">
-              <Ionicons name="person" size={40} color="#9CA3AF" />
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.surface,
+              }}
+            >
+              <Ionicons name="person" size={40} color={theme.subtext} />
             </View>
           )}
         </View>
 
-        <View className="mt-3">
-          <View className="flex-row items-center">
-            <Text className="text-2xl font-black text-gray-900">
+        <View style={{ marginTop: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text
+              style={{ color: theme.text, fontSize: 26, fontWeight: '900' }}
+            >
               {user?.first_name} {user?.last_name}
             </Text>
             <Ionicons
               name="checkmark-circle"
               size={18}
-              color="#4ECDC4"
-              className="ml-1"
+              color={theme.primary}
+              style={{ marginLeft: 6 }}
             />
           </View>
-          <Text className="text-gray-500 font-medium">@{user?.username}</Text>
+          <Text
+            style={{ color: theme.subtext, fontWeight: '600', marginTop: 4 }}
+          >
+            @{user?.username}
+          </Text>
         </View>
 
         {user?.bio && (
-          <Text className="mt-4 text-gray-700 leading-5 text-[15px]">
+          <Text
+            style={{
+              marginTop: 16,
+              color: theme.subtext,
+              lineHeight: 22,
+              fontSize: 15,
+            }}
+          >
             {user.bio}
           </Text>
         )}
 
-        {/* Konum ve Link */}
-        <View className="flex-row flex-wrap mt-4">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
           {user?.location && (
-            <View className="flex-row items-center mr-4">
-              <Ionicons name="location-outline" size={16} color="#6B7280" />
-              <Text className="ml-1 text-gray-500 text-sm">
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginRight: 16,
+                marginBottom: 8,
+              }}
+            >
+              <Ionicons
+                name="location-outline"
+                size={16}
+                color={theme.subtext}
+              />
+              <Text
+                style={{ marginLeft: 6, color: theme.subtext, fontSize: 14 }}
+              >
                 {user.location}
               </Text>
             </View>
           )}
           {user?.website && (
-            <View className="flex-row items-center">
-              <Ionicons name="link-outline" size={16} color="#4ECDC4" />
-              <Text className="ml-1 text-[#4ECDC4] text-sm">
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <Ionicons name="link-outline" size={16} color={theme.primary} />
+              <Text
+                style={{ marginLeft: 6, color: theme.primary, fontSize: 14 }}
+              >
                 {user.website}
               </Text>
             </View>
           )}
         </View>
 
-        {/* İlgi Alanları */}
         {user?.preferences && user.preferences.length > 0 && (
-          <View className="mt-6">
-            <Text className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+          <View style={{ marginTop: 24 }}>
+            <Text
+              style={{
+                color: theme.subtext,
+                fontSize: 12,
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                letterSpacing: 1.5,
+                marginBottom: 12,
+              }}
+            >
               İlgi Alanları
             </Text>
-            <View className="flex-row flex-wrap">
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {user.preferences.map((pref, index) => (
                 <View
                   key={index}
-                  className="bg-gray-100 px-4 py-2 rounded-full mr-2 mb-2 border border-gray-200"
+                  style={{
+                    backgroundColor: theme.surface,
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 999,
+                    marginRight: 8,
+                    marginBottom: 8,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  }}
                 >
-                  <Text className="text-gray-700 font-medium text-sm">
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontWeight: '600',
+                      fontSize: 14,
+                    }}
+                  >
                     # {pref}
                   </Text>
                 </View>
@@ -125,19 +232,61 @@ export default function ProfileHeader({
           </View>
         )}
 
-        {/* İstatistikler */}
-        <View className="flex-row mt-6 border-t border-gray-100 pt-6 pb-6">
-          <View className="mr-8">
-            <Text className="font-black text-lg text-gray-900">128</Text>
-            <Text className="text-gray-500 text-xs">Rota</Text>
+        {isOtherUser && (
+          <View
+            style={{
+              backgroundColor: theme.primary,
+              padding: 10,
+              borderRadius: 20,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.text,
+                fontWeight: '700',
+                fontSize: 18,
+                textAlign: 'center',
+              }}
+            >
+              {getButtonText()}
+            </Text>
           </View>
-          <View className="mr-8">
-            <Text className="font-black text-lg text-gray-900">1.2K</Text>
-            <Text className="text-gray-500 text-xs">Takipçi</Text>
+        )}
+        {/* )} */}
+
+        <View
+          style={{
+            flexDirection: 'row',
+            marginTop: 24,
+            borderTopWidth: 1,
+            borderTopColor: theme.border,
+            paddingTop: 24,
+            paddingBottom: 24,
+          }}
+        >
+          <View style={{ marginRight: 32 }}>
+            <Text
+              style={{ color: theme.text, fontWeight: '900', fontSize: 20 }}
+            >
+              128
+            </Text>
+            <Text style={{ color: theme.subtext, fontSize: 12 }}>Rota</Text>
+          </View>
+          <View style={{ marginRight: 32 }}>
+            <Text
+              style={{ color: theme.text, fontWeight: '900', fontSize: 20 }}
+            >
+              1.2K
+            </Text>
+            <Text style={{ color: theme.subtext, fontSize: 12 }}>Takipçi</Text>
           </View>
           <View>
-            <Text className="font-black text-lg text-gray-900">450</Text>
-            <Text className="text-gray-500 text-xs">Beğeni</Text>
+            <Text
+              style={{ color: theme.text, fontWeight: '900', fontSize: 20 }}
+            >
+              450
+            </Text>
+            <Text style={{ color: theme.subtext, fontSize: 12 }}>Beğeni</Text>
           </View>
         </View>
       </View>

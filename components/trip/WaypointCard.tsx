@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { WaypointDraft } from '@/src/hooks/useCreateTrip';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -35,100 +36,223 @@ export const WaypointCard = ({
   isUploading,
   onEditTags,
 }: WaypointCardProps) => {
+  const theme = useThemeColors();
+
   return (
-    <View className="bg-gray-50 p-5 rounded-[32px] mb-6 border border-gray-200 shadow-sm">
-      {/* Üst Başlık ve Silme */}
-      <View className="flex-row justify-between items-center mb-4">
-        <View className="flex-row items-center bg-[#4ECDC4]/10 px-3 py-1 rounded-full">
-          <Text className="font-black text-[#4ECDC4] text-sm">
+    <View
+      style={{
+        backgroundColor: theme.surface,
+        padding: 20,
+        borderRadius: 32,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: theme.border,
+        shadowColor: theme.text,
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.primary + '15',
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+          }}
+        >
+          <Text
+            style={{ color: theme.primary, fontWeight: '900', fontSize: 13 }}
+          >
             DURAK {index + 1}
           </Text>
         </View>
-        <TouchableOpacity onPress={onRemove} className="p-1">
-          <Ionicons name="trash-outline" size={22} color="#FF6B6B" />
+        <TouchableOpacity onPress={onRemove} style={{ padding: 8 }}>
+          <Ionicons name="trash-outline" size={22} color={theme.danger} />
         </TouchableOpacity>
       </View>
 
-      {/* Başlık Girişi */}
       <TextInput
         placeholder="Nereye gittin? (Örn: Odunpazarı)"
+        placeholderTextColor={theme.placeholder}
         value={waypoint.title}
         onChangeText={(val) => onUpdate('title', val)}
-        className="bg-white p-4 rounded-2xl mb-3 border border-gray-100 font-bold text-gray-800"
+        style={{
+          backgroundColor: theme.background,
+          padding: 16,
+          borderRadius: 24,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: theme.border,
+          color: theme.text,
+          fontSize: 16,
+          fontWeight: '700',
+        }}
       />
 
-      {/* 🗺️ Konum Seçici (Yeni Bölüm) */}
       <TouchableOpacity
         onPress={onOpenMap}
-        className="flex-row items-center bg-white p-3 rounded-2xl mb-3 border border-gray-100"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: theme.background,
+          padding: 14,
+          borderRadius: 24,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: theme.border,
+        }}
       >
-        <View className="bg-blue-50 p-2 rounded-xl mr-3">
-          <Ionicons name="location" size={18} color="#3b82f6" />
+        <View
+          style={{
+            backgroundColor: theme.primary,
+            padding: 10,
+            borderRadius: 18,
+            marginRight: 14,
+            elevation: 2,
+          }}
+        >
+          <Ionicons name="location" size={18} color={theme.accentText} />
         </View>
-        <View className="flex-1">
-          <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              color: theme.subtext,
+              fontSize: 10,
+              fontWeight: '800',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+          >
             Koordinatlar
           </Text>
-          <Text className="text-gray-700 font-medium text-xs">
+          <Text style={{ color: theme.text, fontSize: 13, fontWeight: '600' }}>
             {waypoint.latitude !== 0
               ? `${waypoint.latitude.toFixed(4)}, ${waypoint.longitude.toFixed(4)}`
               : 'Haritadan Konum Seç'}
           </Text>
         </View>
-        <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
+        <Ionicons name="chevron-forward" size={16} color={theme.placeholder} />
       </TouchableOpacity>
 
-      {/* Not Girişi */}
       <TextInput
         placeholder="Bu durak hakkında bir şeyler karala..."
+        placeholderTextColor={theme.placeholder}
         value={waypoint.note}
         onChangeText={(val) => onUpdate('note', val)}
         multiline
-        className="bg-white p-4 rounded-2xl mb-4 border border-gray-100 text-sm text-gray-600 min-h-[60px]"
-        textAlignVertical="top"
+        style={{
+          backgroundColor: theme.background,
+          padding: 16,
+          borderRadius: 24,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: theme.border,
+          color: theme.text,
+          fontSize: 14,
+          minHeight: 80,
+          textAlignVertical: 'top',
+        }}
       />
       <CategorySearchPicker
         label="Bu Durağın Kategorisi"
-        selectedCategory={waypoint.category} // waypoint objesinde artık {id, name} var
+        selectedCategory={waypoint.category}
         onSelect={(cat) => onUpdate('category', cat)}
       />
 
-      {/* Resim Galerisi */}
-      <Text className="text-gray-400 text-[10px] font-bold uppercase mb-2 ml-1">
+      <Text
+        style={{
+          color: theme.subtext,
+          fontSize: 10,
+          fontWeight: '800',
+          textTransform: 'uppercase',
+          marginBottom: 8,
+          marginLeft: 4,
+        }}
+      >
         Fotoğraflar
       </Text>
-      <View className="flex-row flex-wrap">
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
         {waypoint.photos.map((photoObj: any, pIdx: number) => (
-          <View key={pIdx} className="relative mr-2 mb-2">
-            <TouchableOpacity
-              onPress={() => onEditTags(pIdx)} // 👈
-            >
+          <View
+            key={pIdx}
+            style={{ position: 'relative', marginRight: 12, marginBottom: 12 }}
+          >
+            <TouchableOpacity onPress={() => onEditTags(pIdx)}>
               <Image
-                source={{ uri: photoObj.url }} // 👈
-                className="w-20 h-20 rounded-2xl border border-gray-100"
+                source={{ uri: photoObj.url }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: theme.border,
+                }}
               />
               {photoObj.tags?.length > 0 && (
-                <View className="absolute bottom-1 right-1 bg-[#4ECDC4] rounded-full p-1">
-                  <Text className="text-[8px] text-white font-bold">
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 6,
+                    right: 6,
+                    backgroundColor: theme.primary,
+                    borderRadius: 999,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.accentText,
+                      fontSize: 8,
+                      fontWeight: '900',
+                    }}
+                  >
                     {photoObj.tags.length}
                   </Text>
                 </View>
               )}
             </TouchableOpacity>
-            {/* Silme butonu aynı kalıyor... */}
           </View>
         ))}
         <TouchableOpacity
           onPress={onPickImage}
           disabled={isUploading}
-          className="w-20 h-20 bg-gray-100 rounded-2xl items-center justify-center border-2 border-dashed border-gray-200"
+          style={{
+            width: 80,
+            height: 80,
+            backgroundColor: theme.surface,
+            borderRadius: 24,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderStyle: 'dashed',
+            borderColor: theme.border,
+          }}
         >
           {isUploading ? (
-            <ActivityIndicator size="small" color="#4ECDC4" />
+            <ActivityIndicator size="small" color={theme.primary} />
           ) : (
-            <View className="items-center">
-              <Ionicons name="camera" size={24} color="#94a3b8" />
-              <Text className="text-[8px] text-gray-400 font-bold mt-1">
+            <View style={{ alignItems: 'center' }}>
+              <Ionicons name="camera" size={24} color={theme.subtext} />
+              <Text
+                style={{
+                  color: theme.subtext,
+                  fontSize: 8,
+                  fontWeight: '800',
+                  marginTop: 6,
+                }}
+              >
                 EKLE
               </Text>
             </View>

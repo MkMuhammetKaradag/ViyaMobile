@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { CommentItem } from './CommentItem';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 type Props = {
   isVisible: boolean;
   onClose: () => void;
@@ -33,10 +34,11 @@ export function CommentSection({
   onSendComment,
   onLoadMore,
 }: Props) {
+  const theme = useThemeColors();
   const [commentText, setCommentText] = useState('');
-  const [isSending, setIsSending] = useState(false); // Gönderiliyor durumu için
+  const [isSending, setIsSending] = useState(false);
   const [replyTo, setReplyTo] = useState<TripComment | null>(null);
-  //   const currentUser = useUserStore.getState().user;
+
   const handlePost = async () => {
     if (!commentText.trim()) return;
 

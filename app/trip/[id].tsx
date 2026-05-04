@@ -2,6 +2,7 @@ import { CommentSection } from '@/components/trip/comments/CommentSection';
 import { TripCoverHeader } from '@/components/trip/TripCoverHeader';
 import { TripInteractionBar } from '@/components/trip/TripInteractionBar';
 import { WaypointList } from '@/components/trip/WaypointList';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useComments } from '@/src/hooks/useComments';
 import { useTripDetail } from '@/src/hooks/useTripDetail';
 import { useUserStore } from '@/src/store/useUserStore';
@@ -24,22 +25,30 @@ export default function TripDetailScreen() {
 
   console.log('TripDetailScreen render oldu. Trip:', currentUser);
 
+  const theme = useThemeColors();
   const { comments, addComment, loadMore } = useComments(id as string);
   if (loading) {
-    return <ActivityIndicator className="flex-1" color="#4ECDC4" />;
+    return <ActivityIndicator style={{ flex: 1 }} color={theme.primary} />;
   }
 
   if (!trip) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-gray-400">Gezi bulunamadı.</Text>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: theme.background,
+        }}
+      >
+        <Text style={{ color: theme.subtext }}>Gezi bulunamadı.</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Kapak */}
         <TripCoverHeader
           title={trip.title}
@@ -59,8 +68,15 @@ export default function TripDetailScreen() {
         />
 
         {/* Açıklama */}
-        <View className="p-6">
-          <Text className="text-gray-600 leading-7 text-base italic">
+        <View style={{ padding: 24 }}>
+          <Text
+            style={{
+              color: theme.subtext,
+              lineHeight: 28,
+              fontSize: 16,
+              fontStyle: 'italic',
+            }}
+          >
             "{trip.description}"
           </Text>
         </View>

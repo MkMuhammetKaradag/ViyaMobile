@@ -1,3 +1,5 @@
+import { ThemePreference, useTheme } from '@/src/hooks/theme/ThemeContext';
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -32,6 +34,14 @@ export default function ProfileEditScreen() {
   const [website, setWebsite] = useState('');
   const [preferences, setPreferences] = useState<string[]>([]);
   const [newPref, setNewPref] = useState(''); // Yeni tercih eklemek için geçici state
+  const { themePreference, setThemePreference } = useTheme();
+  const [selectedTheme, setSelectedTheme] =
+    useState<ThemePreference>(themePreference);
+  const themeColors = useThemeColors();
+
+  useEffect(() => {
+    setSelectedTheme(themePreference);
+  }, [themePreference]);
 
   useEffect(() => {
     fetchProfile();
@@ -154,6 +164,16 @@ export default function ProfileEditScreen() {
     setPreferences(preferences.filter((p) => p !== val));
   };
 
+  const handleThemeChange = async (choice: ThemePreference) => {
+    try {
+      await setThemePreference(choice);
+      setSelectedTheme(choice);
+      Alert.alert('Tema kaydedildi', 'Tema tercihin başarıyla güncellendi.');
+    } catch (error) {
+      Alert.alert('Hata', 'Tema tercihi kaydedilemedi.');
+    }
+  };
+
   if (loading) {
     return (
       <ActivityIndicator className="flex-1" size="large" color="#4ECDC4" />
@@ -161,12 +181,21 @@ export default function ProfileEditScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="px-6 pb-10" showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
+      <ScrollView
+        className="px-6 pb-10"
+        style={{ backgroundColor: themeColors.background }}
+        showsVerticalScrollIndicator={false}
+      >
         <View className="flex-row items-center justify-between my-6">
-          <Text className="text-3xl font-black text-gray-800">Düzenle</Text>
+          <Text
+            style={{ color: themeColors.text }}
+            className="text-3xl font-black"
+          >
+            Düzenle
+          </Text>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="close" size={28} color="black" />
+            <Ionicons name="close" size={28} color={themeColors.text} />
           </TouchableOpacity>
         </View>
 
@@ -228,78 +257,189 @@ export default function ProfileEditScreen() {
         {/* İsim & Soyisim (Yan Yana) */}
         <View className="flex-row space-x-4 mb-4">
           <View className="flex-1">
-            <Text className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1">
+            <Text
+              style={{ color: themeColors.gray }}
+              className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1"
+            >
               Ad
             </Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-2xl border border-gray-100"
+              style={{
+                backgroundColor: themeColors.lightGray,
+                color: themeColors.text,
+                borderColor: themeColors.border,
+              }}
               value={firstName}
               onChangeText={setFirstName}
               placeholder="Adın"
+              placeholderTextColor={themeColors.gray}
             />
           </View>
           <View className="flex-1 ml-4">
-            <Text className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1">
+            <Text
+              style={{ color: themeColors.gray }}
+              className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1"
+            >
               Soyad
             </Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-2xl border border-gray-100"
+              style={{
+                backgroundColor: themeColors.lightGray,
+                color: themeColors.text,
+                borderColor: themeColors.border,
+              }}
               value={lastName}
               onChangeText={setLastName}
               placeholder="Soyadın"
+              placeholderTextColor={themeColors.gray}
             />
           </View>
         </View>
 
         {/* Bio */}
-        <Text className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1">
+        <Text
+          style={{ color: themeColors.gray }}
+          className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1"
+        >
           Hakkında
         </Text>
         <TextInput
           className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4 min-h-[80px]"
+          style={{
+            backgroundColor: themeColors.lightGray,
+            color: themeColors.text,
+            borderColor: themeColors.border,
+          }}
           multiline
           value={bio}
           onChangeText={setBio}
           placeholder="Kendinden bahset..."
+          placeholderTextColor={themeColors.gray}
           textAlignVertical="top"
         />
 
         {/* Konum & Website */}
-        <Text className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1">
+        <Text
+          style={{ color: themeColors.gray }}
+          className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1"
+        >
           Konum
         </Text>
         <TextInput
           className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4"
+          style={{
+            backgroundColor: themeColors.lightGray,
+            color: themeColors.text,
+            borderColor: themeColors.border,
+          }}
           value={location}
           onChangeText={setLocation}
           placeholder="Örn: İstanbul, TR"
+          placeholderTextColor={themeColors.gray}
         />
 
-        <Text className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1">
+        <Text
+          style={{ color: themeColors.gray }}
+          className="text-gray-400 font-bold text-[10px] uppercase mb-1 ml-1"
+        >
           Website
         </Text>
         <TextInput
           className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4"
+          style={{
+            backgroundColor: themeColors.lightGray,
+            color: themeColors.text,
+            borderColor: themeColors.border,
+          }}
           value={website}
           onChangeText={setWebsite}
           placeholder="https://..."
+          placeholderTextColor={themeColors.gray}
           keyboardType="url"
         />
 
+        {/* Tema Seçimi */}
+        <View className="mb-6">
+          <Text
+            style={{ color: themeColors.gray }}
+            className="text-[10px] uppercase mb-2 ml-1 font-bold"
+          >
+            Tema
+          </Text>
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            {[
+              { value: 'default' as ThemePreference, label: 'Sistem' },
+              { value: 'light' as ThemePreference, label: 'Açık' },
+              { value: 'dark' as ThemePreference, label: 'Karanlık' },
+            ].map((item, index) => (
+              <TouchableOpacity
+                key={item.value}
+                onPress={() => handleThemeChange(item.value)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 24,
+                  backgroundColor:
+                    selectedTheme === item.value
+                      ? themeColors.primary
+                      : themeColors.lightGray,
+                  borderWidth: 1,
+                  borderColor:
+                    selectedTheme === item.value
+                      ? themeColors.primary
+                      : themeColors.border,
+                  marginRight: index < 2 ? 10 : 0,
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color:
+                      selectedTheme === item.value
+                        ? '#ffffff'
+                        : themeColors.text,
+                    fontWeight: '700',
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={{ color: themeColors.gray, fontSize: 12 }}>
+            Varsayılan seçilirse sistem moduna göre tema otomatik ayarlanır.
+          </Text>
+        </View>
+
         {/* Tercihler (Preferences) */}
-        <Text className="text-gray-400 font-bold text-[10px] uppercase mb-2 ml-1">
+        <Text
+          style={{ color: themeColors.gray }}
+          className="text-gray-400 font-bold text-[10px] uppercase mb-2 ml-1"
+        >
           İlgi Alanların (Tercihler)
         </Text>
         <View className="flex-row items-center mb-3">
           <TextInput
             className="flex-1 bg-gray-50 p-4 rounded-2xl border border-gray-100 mr-2"
+            style={{
+              backgroundColor: themeColors.lightGray,
+              color: themeColors.text,
+              borderColor: themeColors.border,
+            }}
             value={newPref}
             onChangeText={setNewPref}
             placeholder="Yeni ekle..."
+            placeholderTextColor={themeColors.gray}
           />
           <TouchableOpacity
             onPress={addPreference}
-            className="bg-[#4ECDC4] p-4 rounded-2xl"
+            style={{
+              backgroundColor: themeColors.primary,
+              padding: 16,
+              borderRadius: 24,
+            }}
           >
             <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>

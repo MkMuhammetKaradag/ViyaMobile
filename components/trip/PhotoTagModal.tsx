@@ -1,3 +1,4 @@
+import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { TagDraft } from '@/src/hooks/useCreateTrip';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
@@ -33,6 +34,7 @@ export function PhotoTagModal({
   onUpdateTag,
   onDeleteTag,
 }: Props) {
+  const theme = useThemeColors();
   const [imageLayout, setImageLayout] = useState({ width: 0, height: 0 });
   const [inputVisible, setInputVisible] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -89,11 +91,22 @@ export function PhotoTagModal({
     <>
       {/* Fotoğraf + etiket ekleme modalı */}
       <Modal visible={visible} animationType="fade">
-        <View className="flex-1 bg-black items-center justify-center">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: theme.background,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {photoUrl ? (
             <View
-              style={{ width: screenWidth, height: screenWidth * 1.25 }}
-              className="relative bg-gray-900"
+              style={{
+                width: screenWidth,
+                height: screenWidth * 1.25,
+                position: 'relative',
+                backgroundColor: theme.surface,
+              }}
             >
               <TouchableOpacity
                 activeOpacity={1}
@@ -123,12 +136,24 @@ export function PhotoTagModal({
                         top: `${tag.y_pos}%`,
                         transform: [{ translateX: isRightSide ? -80 : -10 }],
                         zIndex: 100,
+                        backgroundColor: theme.primary,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 999,
+                        borderWidth: 1,
+                        borderColor: theme.background,
+                        flexDirection: 'row',
+                        alignItems: 'center',
                       }}
-                      className="bg-[#4ECDC4] px-3 py-1.5 rounded-full border border-white shadow-lg flex-row items-center"
                     >
                       <Text
                         numberOfLines={1}
-                        className="text-white text-[10px] font-black italic"
+                        style={{
+                          color: theme.accentText,
+                          fontSize: 10,
+                          fontWeight: '900',
+                          fontStyle: 'italic',
+                        }}
                       >
                         {tag.label}
                       </Text>
@@ -138,56 +163,114 @@ export function PhotoTagModal({
               </TouchableOpacity>
             </View>
           ) : (
-            <ActivityIndicator color="white" size="large" />
+            <ActivityIndicator color={theme.text} size="large" />
           )}
 
           <TouchableOpacity
             onPress={onClose}
-            className="mt-10 bg-white/10 px-10 py-4 rounded-3xl border border-white/20"
+            style={{
+              marginTop: 40,
+              backgroundColor: theme.surface,
+              paddingHorizontal: 32,
+              paddingVertical: 14,
+              borderRadius: 28,
+              borderWidth: 1,
+              borderColor: theme.border,
+            }}
           >
-            <Text className="text-white font-bold">KAPAT</Text>
+            <Text style={{ color: theme.text, fontWeight: '900' }}>KAPAT</Text>
           </TouchableOpacity>
         </View>
       </Modal>
 
-      {/* Etiket ismi giriş modalı */}
       <Modal visible={inputVisible} transparent animationType="fade">
-        <View className="flex-1 bg-black/80 justify-center px-10">
-          <View className="bg-white p-6 rounded-[32px]">
-            <Text className="text-lg font-black mb-4 text-gray-800 text-center">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: theme.surface,
+              padding: 24,
+              borderRadius: 32,
+              shadowColor: theme.text,
+              shadowOpacity: 0.1,
+              shadowRadius: 18,
+              elevation: 5,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.text,
+                fontSize: 18,
+                fontWeight: '900',
+                marginBottom: 16,
+                textAlign: 'center',
+              }}
+            >
               Etiketi Yönet
             </Text>
 
             <TextInput
               placeholder="Örn: Buranın kahvesi meşhur"
+              placeholderTextColor={theme.placeholder}
               value={tagName}
               onChangeText={setTagName}
               autoFocus
-              className="bg-gray-100 p-4 rounded-2xl mb-4 font-bold"
+              style={{
+                backgroundColor: theme.background,
+                padding: 16,
+                borderRadius: 24,
+                marginBottom: 16,
+                color: theme.text,
+                fontWeight: '700',
+              }}
             />
 
-            <View className="flex-row gap-x-2">
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
                 onPress={() => setInputVisible(false)}
-                className="flex-1 p-4 rounded-2xl bg-gray-100 items-center"
+                style={{
+                  flex: 1,
+                  padding: 16,
+                  borderRadius: 24,
+                  backgroundColor: theme.background,
+                  alignItems: 'center',
+                }}
               >
-                <Text className="font-bold text-gray-400">Vazgeç</Text>
+                <Text style={{ color: theme.subtext, fontWeight: '900' }}>
+                  Vazgeç
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleSaveTag}
-                className="flex-2 p-4 rounded-2xl bg-[#4ECDC4] items-center px-6"
+                style={{
+                  flex: 1,
+                  padding: 16,
+                  borderRadius: 24,
+                  backgroundColor: theme.primary,
+                  alignItems: 'center',
+                }}
               >
-                <Text className="text-white font-bold">KAYDET</Text>
+                <Text style={{ color: theme.accentText, fontWeight: '900' }}>
+                  KAYDET
+                </Text>
               </TouchableOpacity>
             </View>
 
             {editingIndex !== null && (
               <TouchableOpacity
                 onPress={handleDeleteTag}
-                className="mt-4 p-3 items-center"
+                style={{ marginTop: 20, padding: 12, alignItems: 'center' }}
               >
-                <Text className="text-red-500 font-bold">Etiketi Kaldır</Text>
+                <Text style={{ color: theme.danger, fontWeight: '900' }}>
+                  Etiketi Kaldır
+                </Text>
               </TouchableOpacity>
             )}
           </View>
