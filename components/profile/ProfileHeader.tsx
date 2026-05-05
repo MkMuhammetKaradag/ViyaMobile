@@ -1,26 +1,70 @@
+import { useSocialActions } from '@/src/hooks/social/useSocialActions';
 import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { UserProfile } from '../../src/types/user'; // Tipini doğru yerden import et
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { UserProfile } from '../../src/types/user'; 
 
-// Bileşenin hangi verileri alacağını tanımlıyoruz
+
 interface ProfileHeaderProps {
   user: UserProfile | null;
   isOtherUser?: boolean;
 }
 
 export default function ProfileHeader({
-  user,
+  user: initialUser,
   isOtherUser = false,
-}: ProfileHeaderProps) {
+  onRefresh,
+}: ProfileHeaderProps & { onRefresh?: () => void }) {
+  const { followUser, unfollowUser, loading } = useSocialActions();
   const router = useRouter();
   const theme = useThemeColors();
+  const [localUser, setLocalUser] = useState(initialUser);
+  useEffect(() => {
+    setLocalUser(initialUser);
+  }, [initialUser]);
   const getButtonText = () => {
-    if (user?.is_following) return 'Takipten çık';
-    if (!user?.is_private) return 'Takip Et';
-    return user?.is_requested ? 'İstek Gönderildi' : 'Takip Et';
+    if (localUser?.is_following) return 'Takipten çık';
+    if (localUser?.is_requested) return 'İstek Gönderildi';
+    return 'Takip Et';
+  };
+  const handleFollowAction = async () => {
+    if (!localUser?.id || loading) return;
+
+  
+    const wasFollowing = localUser.is_following;
+    const wasRequested = localUser.is_requested;
+    const isPrivate = localUser.is_private;
+
+    try {
+      if (wasFollowing || wasRequested) {
+        setLocalUser({
+          ...localUser,
+          is_following: false,
+          is_requested: false,
+        });
+        await unfollowUser(localUser.id, onRefresh);
+      } else {
+        // Takip et
+        if (isPrivate) {
+          setLocalUser({ ...localUser, is_requested: true });
+        } else {
+          setLocalUser({ ...localUser, is_following: true });
+        }
+        await followUser(localUser.id, onRefresh);
+      }
+    } catch (error) {
+     
+      setLocalUser(initialUser);
+      console.error('Takip işlemi başarısız:', error);
+    }
   };
   return (
     <View>
@@ -32,9 +76,9 @@ export default function ProfileHeader({
           position: 'relative',
         }}
       >
-        {user?.banner_url ? (
+        {localUser?.banner_url ? (
           <Image
-            source={{ uri: user.banner_url }}
+            source={{ uri: localUser.banner_url }}
             style={{ width: '100%', height: '100%' }}
             resizeMode="cover"
           />
@@ -95,9 +139,9 @@ export default function ProfileHeader({
             elevation: 4,
           }}
         >
-          {user?.avatar_url ? (
+          {localUser?.avatar_url ? (
             <Image
-              source={{ uri: user.avatar_url }}
+              source={{ uri: localUser.avatar_url }}
               style={{ width: '100%', height: '100%' }}
             />
           ) : (
@@ -119,7 +163,7 @@ export default function ProfileHeader({
             <Text
               style={{ color: theme.text, fontSize: 26, fontWeight: '900' }}
             >
-              {user?.first_name} {user?.last_name}
+              {localUser?.first_name} {localUser?.last_name}
             </Text>
             <Ionicons
               name="checkmark-circle"
@@ -131,11 +175,11 @@ export default function ProfileHeader({
           <Text
             style={{ color: theme.subtext, fontWeight: '600', marginTop: 4 }}
           >
-            @{user?.username}
+            @{localUser?.username}
           </Text>
         </View>
 
-        {user?.bio && (
+        {localUser?.bio && (
           <Text
             style={{
               marginTop: 16,
@@ -144,12 +188,12 @@ export default function ProfileHeader({
               fontSize: 15,
             }}
           >
-            {user.bio}
+            {localUser.bio}
           </Text>
         )}
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
-          {user?.location && (
+          {localUser?.location && (
             <View
               style={{
                 flexDirection: 'row',
@@ -166,11 +210,11 @@ export default function ProfileHeader({
               <Text
                 style={{ marginLeft: 6, color: theme.subtext, fontSize: 14 }}
               >
-                {user.location}
+                {localUser.location}
               </Text>
             </View>
           )}
-          {user?.website && (
+          {localUser?.website && (
             <View
               style={{
                 flexDirection: 'row',
@@ -182,13 +226,13 @@ export default function ProfileHeader({
               <Text
                 style={{ marginLeft: 6, color: theme.primary, fontSize: 14 }}
               >
-                {user.website}
+                {localUser.website}
               </Text>
             </View>
           )}
         </View>
 
-        {user?.preferences && user.preferences.length > 0 && (
+        {localUser?.preferences && localUser.preferences.length > 0 && (
           <View style={{ marginTop: 24 }}>
             <Text
               style={{
@@ -203,7 +247,7 @@ export default function ProfileHeader({
               İlgi Alanları
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {user.preferences.map((pref, index) => (
+              {localUser.preferences.map((pref, index) => (
                 <View
                   key={index}
                   style={{
@@ -233,24 +277,37 @@ export default function ProfileHeader({
         )}
 
         {isOtherUser && (
-          <View
+          <TouchableOpacity
+            onPress={handleFollowAction}
+            disabled={loading} // İşlem sırasında butonu kilitle
             style={{
-              backgroundColor: theme.primary,
-              padding: 10,
-              borderRadius: 20,
+              backgroundColor: localUser?.is_following
+                ? theme.border
+                : theme.primary,
+              padding: 12,
+              borderRadius: 10,
+              marginTop: 10,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            <Text
-              style={{
-                color: theme.text,
-                fontWeight: '700',
-                fontSize: 18,
-                textAlign: 'center',
-              }}
-            >
-              {getButtonText()}
-            </Text>
-          </View>
+            {loading ? (
+              <ActivityIndicator
+                color={localUser?.is_following ? theme.text : 'white'}
+              />
+            ) : (
+              <Text
+                style={{
+                  color: localUser?.is_following ? theme.text : 'white',
+                  fontWeight: '700',
+                  fontSize: 16,
+                }}
+              >
+                {getButtonText()}
+              </Text>
+            )}
+          </TouchableOpacity>
         )}
         {/* )} */}
 
