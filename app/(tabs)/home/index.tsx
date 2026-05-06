@@ -122,9 +122,7 @@ export default function HomeScreen() {
               shadowRadius: 14,
               elevation: 6,
             }}
-            onPress={() => {
-              /* çıkış fonksiyonun */
-            }}
+            onPress={handleSignOut}
           >
             <Text
               style={{

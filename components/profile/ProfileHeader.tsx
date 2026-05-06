@@ -10,8 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { UserProfile } from '../../src/types/user'; 
-
+import { UserProfile } from '../../src/types/user';
 
 interface ProfileHeaderProps {
   user: UserProfile | null;
@@ -38,7 +37,6 @@ export default function ProfileHeader({
   const handleFollowAction = async () => {
     if (!localUser?.id || loading) return;
 
-  
     const wasFollowing = localUser.is_following;
     const wasRequested = localUser.is_requested;
     const isPrivate = localUser.is_private;
@@ -61,7 +59,6 @@ export default function ProfileHeader({
         await followUser(localUser.id, onRefresh);
       }
     } catch (error) {
-     
       setLocalUser(initialUser);
       console.error('Takip işlemi başarısız:', error);
     }
@@ -104,7 +101,7 @@ export default function ProfileHeader({
 
         {!isOtherUser && (
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/profile/profile_edit')}
+            onPress={() => router.push('/(tabs)/profile/settings')}
             style={{
               position: 'absolute',
               right: 16,
