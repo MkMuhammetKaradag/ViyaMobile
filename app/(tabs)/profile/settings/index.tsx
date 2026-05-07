@@ -11,7 +11,7 @@ export default function SettingsScreen() {
     id: string;
     title: string;
     icon: string;
-    path?: Href; // String yerine Href tipi kullanıyoruz
+    path?: Href;
     color?: string;
     count?: number;
     action?: () => void;
@@ -59,41 +59,72 @@ export default function SettingsScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              padding: 16,
+              padding: 18,
               backgroundColor: theme.surface,
-              borderRadius: 12,
+              borderRadius: 16,
               marginBottom: 12,
+
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.05,
+              shadowRadius: 4,
+
+              elevation: 2,
             }}
           >
-            <Ionicons
-              name={item.icon as any}
-              size={22}
-              color={item.color || theme.text}
-            />
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                backgroundColor: item.color
+                  ? `${item.color}15`
+                  : `${theme.primary}15`,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Ionicons
+                name={item.icon as any}
+                size={22}
+                color={item.color || theme.primary}
+              />
+            </View>
+
             <Text
               style={{
                 flex: 1,
-                marginLeft: 12,
+                marginLeft: 15,
                 color: item.color || theme.text,
                 fontWeight: '600',
+                fontSize: 16,
               }}
             >
               {item.title}
             </Text>
+
             {item.count ? (
               <View
                 style={{
                   backgroundColor: theme.primary,
-                  borderRadius: 10,
-                  paddingHorizontal: 8,
+                  borderRadius: 20, // Tam yuvarlak
+                  minWidth: 24,
+                  height: 24,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 8,
+                  paddingHorizontal: 6,
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 12 }}>
+                <Text
+                  style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}
+                >
                   {item.count}
                 </Text>
               </View>
             ) : null}
-            <Ionicons name="chevron-forward" size={20} color={theme.subtext} />
+
+            <Ionicons name="chevron-forward" size={18} color={theme.subtext} />
           </TouchableOpacity>
         ))}
       </View>

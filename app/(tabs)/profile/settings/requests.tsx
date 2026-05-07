@@ -13,21 +13,30 @@ import {
 } from 'react-native';
 
 interface FollowRequest {
-  follower_id: string;
+  user_id: string; // Gönderilenlerde bu 'following_id' olacak ama API'den aynı field adı geliyorsa kalsın
   username: string;
   avatar_url: string;
   created_at: string;
 }
 
-export default function  () {
+type RequestTab = 'incoming' | 'outgoing';
+
+export default function FollowRequestsScreen() {
   const theme = useThemeColors();
+  const [activeTab, setActiveTab] = useState<RequestTab>('incoming');
   const [requests, setRequests] = useState<FollowRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. İstekleri Getir
-  const fetchRequests = async () => {
+  // Verileri Çek
+  const fetchRequests = async (tab: RequestTab) => {
+    setLoading(true);
     try {
-      const response = await apiClient.get('/api/v1/social/pending-requests');
+      const endpoint =
+        tab === 'incoming'
+          ? '/api/v1/social/pending-requests'
+          : '/api/v1/social/sent-follow-requests'; // Senin yeni endpointin
+
+      const response = await apiClient.get(endpoint);
       setRequests(response.data.requests || []);
     } catch (error) {
       console.error('İstekler çekilemedi:', error);
@@ -37,132 +46,167 @@ export default function  () {
   };
 
   useEffect(() => {
-    fetchRequests();
-  }, []);
+    fetchRequests(activeTab);
+  }, [activeTab]);
 
-  // 2. İsteği Yönet (Onayla/Reddet)
+  // Gelen İsteği Onayla/Reddet veya Giden İsteği İptal Et
   const handleAction = async (
-    followerId: string,
-    action: 'accept' | 'reject',
+    targetId: string,
+    action: 'accept' | 'reject' | 'cancel',
   ) => {
     try {
-      // Backend tarafındaki endpoint'ine göre burayı güncelle
-      // Örn: POST /api/v1/social/follow-request/resolve
+      // Endpointleri backend mantığına göre düzenle
+      // action === 'cancel' ise isteği geri çekme API'sini çağır
 
-      // İşlem başarılıysa listeden kaldır
-      //   setRequests((prev) =>
-      //     prev.filter((req) => req.follower_id !== followerId),
-      //   );
-
-      Alert.alert(
-        'Başarılı',
-        action === 'accept' ? 'Takip isteği onaylandı.' : 'İstek reddedildi.',
-      );
+      setRequests((prev) => prev.filter((req) => req.user_id !== targetId));
+      Alert.alert('Başarılı', 'İşlem tamamlandı.');
     } catch (error) {
       Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
     }
   };
 
-  if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.primary} />
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      {/* Header */}
+      {/* Custom Tab Switcher */}
       <View
         style={{
-          padding: 20,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.border,
+          flexDirection: 'row',
+          padding: 10,
+          backgroundColor: theme.surface,
         }}
       >
-        <Text style={{ fontSize: 24, fontWeight: '900', color: theme.text }}>
-          Takip İstekleri
-        </Text>
-      </View>
-
-      <FlatList
-        data={requests}
-        keyExtractor={(item) => item.follower_id}
-        ListEmptyComponent={() => (
-          <View style={{ flex: 1, alignItems: 'center', marginTop: 100 }}>
-            <Ionicons name="people-outline" size={64} color={theme.border} />
-            <Text style={{ color: theme.subtext, marginTop: 16, fontSize: 16 }}>
-              Şu an bekleyen istek yok.
-            </Text>
-          </View>
-        )}
-        renderItem={({ item }) => (
-          <View
+        <TouchableOpacity
+          onPress={() => setActiveTab('incoming')}
+          style={{
+            flex: 1,
+            padding: 12,
+            alignItems: 'center',
+            borderBottomWidth: 2,
+            borderBottomColor:
+              activeTab === 'incoming' ? theme.primary : 'transparent',
+          }}
+        >
+          <Text
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: theme.border,
-              backgroundColor: theme.surface,
+              color: activeTab === 'incoming' ? theme.primary : theme.subtext,
+              fontWeight: '700',
             }}
           >
-            <Image
-              source={{ uri: item.avatar_url }}
+            Gelenler
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActiveTab('outgoing')}
+          style={{
+            flex: 1,
+            padding: 12,
+            alignItems: 'center',
+            borderBottomWidth: 2,
+            borderBottomColor:
+              activeTab === 'outgoing' ? theme.primary : 'transparent',
+          }}
+        >
+          <Text
+            style={{
+              color: activeTab === 'outgoing' ? theme.primary : theme.subtext,
+              fontWeight: '700',
+            }}
+          >
+            Gidenler
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={requests}
+          keyExtractor={(item) => item.user_id}
+          ListEmptyComponent={() => (
+            <View style={{ alignItems: 'center', marginTop: 100 }}>
+              <Ionicons name="mail-outline" size={64} color={theme.border} />
+              <Text style={{ color: theme.subtext, marginTop: 16 }}>
+                İstek bulunmuyor.
+              </Text>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <View
               style={{
-                width: 50,
-                height: 50,
-                borderRadius: 25,
-                backgroundColor: theme.border,
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 16,
+                backgroundColor: theme.surface,
+                marginBottom: 1,
               }}
-            />
+            >
+              <Image
+                source={{ uri: item.avatar_url }}
+                style={{ width: 45, height: 45, borderRadius: 22 }}
+              />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={{ color: theme.text, fontWeight: '700' }}>
+                  @{item.username}
+                </Text>
+                <Text style={{ color: theme.subtext, fontSize: 11 }}>
+                  {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+              </View>
 
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text
-                style={{ color: theme.text, fontWeight: '700', fontSize: 16 }}
-              >
-                @{item.username}
-              </Text>
-              <Text style={{ color: theme.subtext, fontSize: 12 }}>
-                {new Date(item.created_at).toLocaleDateString('tr-TR')}
-              </Text>
+              {activeTab === 'incoming' ? (
+                <View style={{ flexDirection: 'row' }}>
+                  <TouchableOpacity
+                    onPress={() => handleAction(item.user_id, 'accept')}
+                    style={{
+                      backgroundColor: theme.primary,
+                      padding: 8,
+                      borderRadius: 6,
+                      marginRight: 5,
+                    }}
+                  >
+                    <Ionicons name="checkmark" size={18} color="white" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleAction(item.user_id, 'reject')}
+                    style={{
+                      backgroundColor: theme.border,
+                      padding: 8,
+                      borderRadius: 6,
+                    }}
+                  >
+                    <Ionicons name="close" size={18} color={theme.text} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                // Giden isteklerde sadece "İptal Et" butonu
+                <TouchableOpacity
+                  onPress={() => handleAction(item.user_id, 'cancel')}
+                  style={{
+                    backgroundColor: theme.border,
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    borderRadius: 6,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontSize: 12,
+                      fontWeight: '600',
+                    }}
+                  >
+                    İptal Et
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
-
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity
-                onPress={() => handleAction(item.follower_id, 'accept')}
-                style={{
-                  backgroundColor: theme.primary,
-                  padding: 8,
-                  borderRadius: 8,
-                  marginRight: 8,
-                }}
-              >
-                <Ionicons name="checkmark" size={20} color="white" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleAction(item.follower_id, 'reject')}
-                style={{
-                  backgroundColor: theme.border,
-                  padding: 8,
-                  borderRadius: 8,
-                }}
-              >
-                <Ionicons name="close" size={20} color={theme.text} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }
