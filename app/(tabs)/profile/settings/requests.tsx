@@ -49,19 +49,28 @@ export default function FollowRequestsScreen() {
     fetchRequests(activeTab);
   }, [activeTab]);
 
-  // Gelen İsteği Onayla/Reddet veya Giden İsteği İptal Et
   const handleAction = async (
-    targetId: string,
-    action: 'accept' | 'reject' | 'cancel',
+    followerId: string,
+    action: 'ACCEPT' | 'REJECT' | 'CANCEL',
   ) => {
     try {
-      // Endpointleri backend mantığına göre düzenle
-      // action === 'cancel' ise isteği geri çekme API'sini çağır
+      if (action === 'CANCEL') {
+        await apiClient.post(`/api/v1/social/unfollow/${followerId}`);
+      } else {
+        await apiClient.post(`/api/v1/social/follow-request/${followerId}`, {
+          action: action,
+        });
+      }
 
-      setRequests((prev) => prev.filter((req) => req.user_id !== targetId));
-      Alert.alert('Başarılı', 'İşlem tamamlandı.');
-    } catch (error) {
-      Alert.alert('Hata', 'İşlem gerçekleştirilemedi.');
+      setRequests((prev) => prev.filter((req) => req.user_id !== followerId));
+
+      Alert.alert(
+        'Başarılı',
+        action === 'ACCEPT' ? 'Takip isteği kabul edildi.' : 'İstek silindi.',
+      );
+    } catch (error: any) {
+      console.error('İşlem hatası:', error.response?.data || error.message);
+      Alert.alert('Hata', 'İşlem gerçekleştirilemedi. Lütfen tekrar deneyin.');
     }
   };
 
@@ -160,7 +169,7 @@ export default function FollowRequestsScreen() {
               {activeTab === 'incoming' ? (
                 <View style={{ flexDirection: 'row' }}>
                   <TouchableOpacity
-                    onPress={() => handleAction(item.user_id, 'accept')}
+                    onPress={() => handleAction(item.user_id, 'ACCEPT')}
                     style={{
                       backgroundColor: theme.primary,
                       padding: 8,
@@ -171,7 +180,7 @@ export default function FollowRequestsScreen() {
                     <Ionicons name="checkmark" size={18} color="white" />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => handleAction(item.user_id, 'reject')}
+                    onPress={() => handleAction(item.user_id, 'REJECT')}
                     style={{
                       backgroundColor: theme.border,
                       padding: 8,
@@ -184,7 +193,7 @@ export default function FollowRequestsScreen() {
               ) : (
                 // Giden isteklerde sadece "İptal Et" butonu
                 <TouchableOpacity
-                  onPress={() => handleAction(item.user_id, 'cancel')}
+                  onPress={() => handleAction(item.user_id, 'CANCEL')}
                   style={{
                     backgroundColor: theme.border,
                     paddingVertical: 6,
