@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -32,6 +33,7 @@ export default function ProfileEditScreen() {
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
   const [website, setWebsite] = useState('');
+  const [isPrivate, setIsPrivate] = useState<boolean | null>(null);
   const [preferences, setPreferences] = useState<string[]>([]);
   const [newPref, setNewPref] = useState(''); // Yeni tercih eklemek için geçici state
   const { themePreference, setThemePreference } = useTheme();
@@ -63,6 +65,7 @@ export default function ProfileEditScreen() {
       setPreferences(u.preferences ?? []);
       setAvatarUri(u.avatar_url);
       setBannerUri(u.banner_url);
+      setIsPrivate(u.is_private);
     } catch (err) {
       Alert.alert('Hata', 'Profil yüklenirken bir sorun oluştu.');
     } finally {
@@ -95,6 +98,7 @@ export default function ProfileEditScreen() {
         location: location || null,
         website: website || null,
         preferences: preferences,
+        is_private: isPrivate !== null ? isPrivate : null,
       };
 
       await apiClient.put('/api/v1/users/update-profile', payload);
@@ -104,6 +108,8 @@ export default function ProfileEditScreen() {
         bio: bio,
         location: location,
         website: website,
+        preferences: preferences,
+        is_private: isPrivate !== null ? isPrivate : undefined,
       });
       Alert.alert('Başarılı', 'Profilin güncellendi! 🚀');
       // router.navigate('/(tabs)/profile');
@@ -359,6 +365,44 @@ export default function ProfileEditScreen() {
           placeholderTextColor={themeColors.gray}
           keyboardType="url"
         />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 16,
+            paddingHorizontal: 4,
+          }}
+        >
+          <View style={{ flex: 1, marginRight: 16 }}>
+            <Text
+              style={{
+                color: themeColors.text,
+                fontWeight: '900',
+                fontSize: 15,
+              }}
+            >
+              Profil Gizliliği
+            </Text>
+            <Text style={{ color: themeColors.subtext, fontSize: 12 }}>
+              Profilini gizli yaparsan, sadece onayladığın kişiler profiline ve
+              paylaşımlarına erişebilir.
+            </Text>
+          </View>
+          <Switch
+            trackColor={{
+              false: themeColors.border,
+              true: themeColors.primary,
+            }}
+            thumbColor={
+              isPrivate ? themeColors.background : themeColors.surface
+            }
+            onValueChange={(val) => {
+              setIsPrivate(val);
+            }}
+            value={isPrivate || false}
+          />
+        </View>
 
         {/* Tema Seçimi */}
         <View className="mb-6">
