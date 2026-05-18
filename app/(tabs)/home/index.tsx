@@ -1,10 +1,12 @@
 import ScreenWrapper from '@/components/common/ScreenWrapper';
 import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
+import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -38,11 +40,21 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const { user } = useUserStore();
+  const fetchHomeFeed = async (
+    pageNum: number,
+    isRefresh = false,
+    signal?: AbortSignal,
+  ) => {
+    // 🛑 KORUMA DUVARI: Eğer kullanıcı çıkış yaptıysa veya oturumu yoksa İSTEK ATMA!
+    if (!user) {
+      return;
+    }
 
-  const fetchHomeFeed = async (pageNum: number, isRefresh = false) => {
     try {
       const res = await apiClient.get(
         `/api/v1/trips/home-feed?page=${pageNum}&limit=10`,
+        { signal }, // İptal sinyalini bağladık
       );
       const newTrips = res.data.trips || [];
 
@@ -54,6 +66,7 @@ export default function HomeScreen() {
 
       if (newTrips.length < 5) setHasMore(false);
     } catch (error) {
+      if (axios.isCancel(error)) return; // İstek bizim tarafımızdan iptal edildiyse hata basma
       console.error('Feed error:', error);
     } finally {
       setLoading(false);
@@ -61,9 +74,20 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchHomeFeed(1);
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      // Eğer kullanıcı zaten yoksa hiç başlama
+      if (!user) return;
+
+      const controller = new AbortController();
+      fetchHomeFeed(1, true, controller.signal);
+
+      // Kullanıcı Settings'e gidip çıkış yaptığında veya sekmeyi değiştirdiğinde:
+      return () => {
+        controller.abort(); // Ağ isteğini anında keser
+      };
+    }, [user]), // user değiştiğinde de tetiklenmesi için bağımlılık ekledik
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

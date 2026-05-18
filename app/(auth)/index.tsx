@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,13 @@ export default function SignInScreen() {
 
   const handleSignIn = async () => {
     if (!email || !password)
-      return Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
+      return Toast.show({
+        type: 'info',
+        text1: 'Eksik Bilgi',
+        text2: 'Lütfen bu alanı doldurunuz. 👋',
+        position: 'top', 
+        visibilityTime: 3000,
+      });
     setLoading(true);
     try {
       const response = await apiClient.post('/api/v1/auth/signin', {
@@ -36,7 +43,14 @@ export default function SignInScreen() {
       }
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Giriş yapılamadı';
-      Alert.alert('Hata', msg);
+      Toast.show({
+        type: 'error',
+        text1: 'Hata',
+        text2: msg,
+        position: 'top', 
+        visibilityTime: 3000,
+      });
+      
     } finally {
       setLoading(false);
     }

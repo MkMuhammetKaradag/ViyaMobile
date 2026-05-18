@@ -5,7 +5,6 @@ import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
@@ -27,7 +27,13 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     if (!email || !password || !username) {
-      return Alert.alert('Hata', 'Lütfen tüm alanları doldurun');
+      return Toast.show({
+        type: 'info',
+        text1: 'Eksik Bilgi',
+        text2: 'Lütfen tüm alanları doldurunuz. 👋',
+        position: 'top',
+        visibilityTime: 3000,
+      });
     }
     setLoading(true);
     try {
@@ -38,15 +44,25 @@ export default function SignUpScreen() {
       });
 
       if (response.status === 201 || response.status === 200) {
-        Alert.alert(
-          'Başarılı',
-          'Hesap oluşturuldu! Şimdi giriş yapabilirsiniz.',
-        );
+        Toast.show({
+          type: 'success',
+          text1: 'Kayıt Başarılı',
+          text2: 'Hesabınız oluşturuldu, şimdi giriş yapabilirsiniz! 👋',
+          position: 'top',
+          visibilityTime: 3000,
+        });
+
         router.replace('/(auth)');
       }
     } catch (error: any) {
       const msg = error.response?.data?.message || 'Kayıt başarısız';
-      Alert.alert('Hata', msg);
+      Toast.show({
+        type: 'error',
+        text1: 'Hata',
+        text2: msg,
+        position: 'top',
+        visibilityTime: 3000,
+      });
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 // LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
-
+import Toast from 'react-native-toast-message';
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [hasSession, setHasSession] = useState<string | null>(null);
@@ -62,6 +62,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
         </Stack>
       </SafeAreaProvider>
+      <Toast />
     </ThemeProvider>
   );
 }

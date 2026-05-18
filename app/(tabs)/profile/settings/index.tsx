@@ -1,17 +1,19 @@
 import { apiClient } from '@/src/api/client'; // Kendi client'ın
 import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
+import { useUserStore } from '@/src/store/useUserStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Href, useFocusEffect, useRouter } from 'expo-router'; // useFocusEffect ekledik
+import * as SecureStore from 'expo-secure-store';
 import React, { useCallback, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-
+import Toast from 'react-native-toast-message';
 export default function SettingsScreen() {
   const router = useRouter();
   const theme = useThemeColors();
 
   // 1. Sayaç için state oluşturuyoruz
   const [pendingCount, setPendingCount] = useState(0);
-
+  const { logout } = useUserStore();
   // 2. Backend'den bekleyen istek sayısını çeken fonksiyon
   const fetchPendingCount = async () => {
     try {
@@ -66,8 +68,32 @@ export default function SettingsScreen() {
       title: 'Çıkış Yap',
       icon: 'log-out-outline',
       color: '#FF5252',
-      action: () => {
-        /* Çıkış mantığı */
+      action: async () => {
+        try {
+          // skipAuthInterceptor ayarını ekledik. Böylece bu istek hata alsa bile interceptor toast basmayacak.
+          await apiClient.post('/api/v1/auth/signout', {}, {
+            skipAuthInterceptor: true,
+          } as any);
+
+          await SecureStore.deleteItemAsync('hasSession');
+          logout();
+
+          router.replace('/(auth)');
+
+          Toast.show({
+            type: 'success',
+            text1: 'Çıkış Yapıldı',
+            text2: 'Başarıyla çıkış yaptınız. 👋',
+            position: 'top',
+            visibilityTime: 3000,
+          });
+        } catch (error) {
+          console.error('Çıkış hatası:', error);
+
+          await SecureStore.deleteItemAsync('hasSession');
+          logout();
+          router.replace('/(auth)');
+        }
       },
     },
   ];
