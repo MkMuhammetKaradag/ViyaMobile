@@ -2,17 +2,19 @@ import { CommentSection } from '@/components/trip/comments/CommentSection';
 import { TripCoverHeader } from '@/components/trip/TripCoverHeader';
 import { TripInteractionBar } from '@/components/trip/TripInteractionBar';
 import { WaypointList } from '@/components/trip/WaypointList';
+import { apiClient } from '@/src/api/client';
 import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useComments } from '@/src/hooks/useComments';
 import { useTripDetail } from '@/src/hooks/useTripDetail';
 import { useUserStore } from '@/src/store/useUserStore';
-import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
 
 export default function TripDetailScreen() {
   const [isCommentModalVisible, setCommentModalVisible] = React.useState(false);
   const { id } = useLocalSearchParams();
+  const [isForking, setIsForking] = useState(false);
   const currentUser = useUserStore.getState().user;
   const {
     trip,
@@ -23,7 +25,48 @@ export default function TripDetailScreen() {
     toggleLike,
   } = useTripDetail();
 
-  console.log('TripDetailScreen render oldu. Trip:', currentUser);
+  // 🚀 Fork İşlemini Başlatan Fonksiyon
+  const handleForkTrip = () => {
+    Alert.alert(
+      'Rotayı Çatalla',
+      'Bu rotayı kendi seyahat planlarına kopyalamak istiyor musun? Duraklar fotoğraflarsız olarak aktarılacaktır.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Çatalla',
+          style: 'destructive',
+
+          onPress: async () => {
+            setIsForking(true);
+            try {
+              // Backend'deki endpoint'imize istek atıyoruz
+              const res = await apiClient.post(`/api/v1/trips/${id}/fork`);
+
+              Alert.alert(
+                'Başarılı',
+                'Rota başarıyla çatallandı! Yeni rotana yönlendiriliyorsun.',
+              );
+
+              // Backend ForkTripResponse içinde yeni trip_id döndüğünü varsayıyorum (Örn: res.data.id)
+              if (res.data && res.data.id) {
+                router.replace(`/trip/${res.data.id}`);
+              } else {
+                router.replace('/(tabs)/profile'); // Fallback olarak profile yolla
+              }
+            } catch (error: any) {
+              console.error('Fork hatası:', error);
+              const errorMsg =
+                error.response?.data?.error ||
+                'Rota çatallanamadı. Gizlilik ayarlarını kontrol edin.';
+              Alert.alert('Hata', errorMsg);
+            } finally {
+              setIsForking(false);
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const theme = useThemeColors();
   const { comments, addComment, loadMore } = useComments(id as string);
@@ -63,8 +106,11 @@ export default function TripDetailScreen() {
           likeCount={trip.like_count}
           commentCount={trip.comment_count}
           isLiked={trip.is_liked}
+          isMyTrip={isMyTrip}
+          isForking={isForking}
           onLikePress={toggleLike}
           onCommentPress={() => setCommentModalVisible(true)}
+          onForkPress={handleForkTrip}
         />
 
         {/* Açıklama */}

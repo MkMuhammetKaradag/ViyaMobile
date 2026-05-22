@@ -6,7 +6,6 @@ import * as SecureStore from 'expo-secure-store';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -27,7 +26,7 @@ export default function SignInScreen() {
         type: 'info',
         text1: 'Eksik Bilgi',
         text2: 'Lütfen bu alanı doldurunuz. 👋',
-        position: 'top', 
+        position: 'top',
         visibilityTime: 3000,
       });
     setLoading(true);
@@ -42,15 +41,15 @@ export default function SignInScreen() {
         router.replace('/(tabs)/home');
       }
     } catch (error: any) {
+      console.log('Giriş Hatası:', error.response?.data || error.message);
       const msg = error.response?.data?.message || 'Giriş yapılamadı';
       Toast.show({
         type: 'error',
         text1: 'Hata',
         text2: msg,
-        position: 'top', 
+        position: 'top',
         visibilityTime: 3000,
       });
-      
     } finally {
       setLoading(false);
     }
