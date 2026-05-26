@@ -10,12 +10,20 @@ import { useUserStore } from '@/src/store/useUserStore';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import { EditWaypointModal } from './editWaypointModal';
 
 export default function TripDetailScreen() {
   const [isCommentModalVisible, setCommentModalVisible] = React.useState(false);
   const { id } = useLocalSearchParams();
   const [isForking, setIsForking] = useState(false);
   const currentUser = useUserStore.getState().user;
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [selectedWaypoint, setSelectedWaypoint] = useState<any>(null);
+
+  const handleOpenEdit = (waypoint: any) => {
+    setSelectedWaypoint(waypoint);
+    setEditModalVisible(true);
+  };
   const {
     trip,
     loading,
@@ -23,9 +31,9 @@ export default function TripDetailScreen() {
     deleteWaypoint,
     reorderWaypoint,
     toggleLike,
+    refetch,
   } = useTripDetail();
 
-  // 🚀 Fork İşlemini Başlatan Fonksiyon
   const handleForkTrip = () => {
     Alert.alert(
       'Rotayı Çatalla',
@@ -39,7 +47,6 @@ export default function TripDetailScreen() {
           onPress: async () => {
             setIsForking(true);
             try {
-              // Backend'deki endpoint'imize istek atıyoruz
               const res = await apiClient.post(`/api/v1/trips/${id}/fork`);
 
               Alert.alert(
@@ -47,11 +54,10 @@ export default function TripDetailScreen() {
                 'Rota başarıyla çatallandı! Yeni rotana yönlendiriliyorsun.',
               );
 
-              // Backend ForkTripResponse içinde yeni trip_id döndüğünü varsayıyorum (Örn: res.data.id)
               if (res.data && res.data.id) {
                 router.replace(`/trip/${res.data.id}`);
               } else {
-                router.replace('/(tabs)/profile'); // Fallback olarak profile yolla
+                router.replace('/(tabs)/profile');
               }
             } catch (error: any) {
               console.error('Fork hatası:', error);
@@ -134,6 +140,7 @@ export default function TripDetailScreen() {
           tripId={id}
           onDelete={deleteWaypoint}
           onReorder={reorderWaypoint}
+          onEdit={handleOpenEdit}
         />
       </ScrollView>
       <CommentSection
@@ -143,6 +150,17 @@ export default function TripDetailScreen() {
         comments={comments}
         onSendComment={addComment}
         onLoadMore={loadMore}
+      />
+      <EditWaypointModal
+        isVisible={isEditModalVisible}
+        onClose={() => {
+          setEditModalVisible(false);
+          setSelectedWaypoint(null);
+        }}
+        waypoint={selectedWaypoint}
+        onSuccess={() => {
+          refetch();
+        }}
       />
     </View>
   );

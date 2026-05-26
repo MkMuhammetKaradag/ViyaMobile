@@ -19,6 +19,7 @@ type Props = {
     currentIndex: number,
     direction: 'up' | 'down',
   ) => void;
+  onEdit: (waypoint: Waypoint) => void; 
 };
 
 export function WaypointList({
@@ -27,6 +28,7 @@ export function WaypointList({
   tripId,
   onDelete,
   onReorder,
+  onEdit, 
 }: Props) {
   const router = useRouter();
 
@@ -66,6 +68,13 @@ export function WaypointList({
                   <Ionicons name="chevron-down" size={18} color="#4ECDC4" />
                 </TouchableOpacity>
               )}
+
+              <TouchableOpacity
+                onPress={() => onEdit(wp)} // Üst katmandaki handleOpenEdit'e quidecek şekilde düzenlendi
+                className="p-2 bg-gray-50 rounded-full border border-gray-100"
+              >
+                <Ionicons name="pencil-outline" size={18} color="#4ECDC4" />
+              </TouchableOpacity>
 
               {/* Sil */}
               <TouchableOpacity
