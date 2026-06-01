@@ -1,4 +1,5 @@
 import { CommentSection } from '@/components/trip/comments/CommentSection';
+import { EditTripModal } from '@/components/trip/EditTripModal';
 import { TripCoverHeader } from '@/components/trip/TripCoverHeader';
 import { TripInteractionBar } from '@/components/trip/TripInteractionBar';
 import { WaypointList } from '@/components/trip/WaypointList';
@@ -7,9 +8,17 @@ import { useThemeColors } from '@/src/hooks/theme/useThemeColors';
 import { useComments } from '@/src/hooks/useComments';
 import { useTripDetail } from '@/src/hooks/useTripDetail';
 import { useUserStore } from '@/src/store/useUserStore';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { EditWaypointModal } from './editWaypointModal';
 
 export default function TripDetailScreen() {
@@ -17,13 +26,17 @@ export default function TripDetailScreen() {
   const { id } = useLocalSearchParams();
   const [isForking, setIsForking] = useState(false);
   const currentUser = useUserStore.getState().user;
+
+  // Modalların State Yönetimleri
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [isEditTripModalVisible, setEditTripModalVisible] = useState(false); // 🚀 Gezi modal state'i
   const [selectedWaypoint, setSelectedWaypoint] = useState<any>(null);
 
   const handleOpenEdit = (waypoint: any) => {
     setSelectedWaypoint(waypoint);
     setEditModalVisible(true);
   };
+
   const {
     trip,
     loading,
@@ -43,12 +56,10 @@ export default function TripDetailScreen() {
         {
           text: 'Çatalla',
           style: 'destructive',
-
           onPress: async () => {
             setIsForking(true);
             try {
               const res = await apiClient.post(`/api/v1/trips/${id}/fork`);
-
               Alert.alert(
                 'Başarılı',
                 'Rota başarıyla çatallandı! Yeni rotana yönlendiriliyorsun.',
@@ -76,6 +87,7 @@ export default function TripDetailScreen() {
 
   const theme = useThemeColors();
   const { comments, addComment, loadMore } = useComments(id as string);
+
   if (loading) {
     return <ActivityIndicator style={{ flex: 1 }} color={theme.primary} />;
   }
@@ -106,7 +118,6 @@ export default function TripDetailScreen() {
         />
 
         {/* Etkileşim barı */}
-
         <TripInteractionBar
           viewCount={trip.view_count}
           likeCount={trip.like_count}
@@ -119,6 +130,48 @@ export default function TripDetailScreen() {
           onForkPress={handleForkTrip}
         />
 
+        {/* 🚀 BAŞLIK & AÇIKLAMA BAŞI DÜZENLEME PANELİ (Sadece gezi sahibi görebilir) */}
+        {isMyTrip && (
+          <View
+            style={{
+              paddingHorizontal: 24,
+              paddingTop: 16,
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => setEditTripModalVisible(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.surface,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: theme.border,
+              }}
+            >
+              <Ionicons
+                name="create-outline"
+                size={16}
+                color={theme.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontWeight: '700',
+                  fontSize: 13,
+                }}
+              >
+                Geziyi Düzenle
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Açıklama */}
         <View style={{ padding: 24 }}>
           <Text
@@ -129,7 +182,7 @@ export default function TripDetailScreen() {
               fontStyle: 'italic',
             }}
           >
-            "{trip.description}"
+            "{trip.description || 'Bu rota için henüz bir açıklama eklenmedi.'}"
           </Text>
         </View>
 
@@ -143,6 +196,7 @@ export default function TripDetailScreen() {
           onEdit={handleOpenEdit}
         />
       </ScrollView>
+
       <CommentSection
         isVisible={isCommentModalVisible}
         onClose={() => setCommentModalVisible(false)}
@@ -151,6 +205,8 @@ export default function TripDetailScreen() {
         onSendComment={addComment}
         onLoadMore={loadMore}
       />
+
+      {/* Durak Düzenleme Modalı */}
       <EditWaypointModal
         isVisible={isEditModalVisible}
         onClose={() => {
@@ -160,6 +216,16 @@ export default function TripDetailScreen() {
         waypoint={selectedWaypoint}
         onSuccess={() => {
           refetch();
+        }}
+      />
+
+      {/* 🚀 Gezi Düzenleme Modalı */}
+      <EditTripModal
+        isVisible={isEditTripModalVisible}
+        onClose={() => setEditTripModalVisible(false)}
+        trip={trip}
+        onSuccess={() => {
+          refetch(); // Başarılı olunca backend'den güncel gezi verilerini (başlık, desc vb.) çekiyoruz!
         }}
       />
     </View>
